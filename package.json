@@ -62,7 +62,9 @@
         "stage_latest": "npm run dist && node tasks/stage.js latest",
         "stage_dev": "npm run dist && node tasks/stage.js dev",
         "demo:archive": "webpack --config webpack.demo.js && http-server -o /examples/react-archive.html",
-        "check:links": "tools/check-links.sh",
+        "serve": "npm run dist && http-server dist -p 8765 -c-1 -o",
+        "serve:only": "http-server dist -p 8765 -c-1 -o",
+        "check:links": "tools/check-links.sh http://localhost:8765",
         "prepublishOnly": "npm run dist"
     },
     "contributors": [
