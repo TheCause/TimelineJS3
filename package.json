@@ -42,14 +42,14 @@
     },
     "repository": {
         "type": "git",
-        "url": ""
+        "url": "git+https://github.com/TheCause/TimelineJS3.git"
     },
     "keywords": ["timeline", "react", "visualization", "fork"],
     "author": "Régis Rigaud",
     "bugs": {
-        "url": ""
+        "url": "https://github.com/TheCause/TimelineJS3/issues"
     },
-    "homepage": "",
+    "homepage": "https://github.com/TheCause/TimelineJS3#readme",
     "scripts": {
         "test": "jest",
         "dist": "run-s clean build",
