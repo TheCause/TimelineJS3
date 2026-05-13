@@ -21,6 +21,7 @@ examples/dist
 .vscode
 .claude-handoff.md
 .playwright-mcp/
+landing-*.png
 .claude
 
 # Playwright

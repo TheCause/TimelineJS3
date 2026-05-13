@@ -149,13 +149,18 @@
             return url_vars;
         };
 
-        // Pick the bundle based on ?theme=. Vanilla otherwise.
+        // Pick the bundle based on ?theme=. Vanilla otherwise. Resolves with
+        // the directory the bundle was loaded from, so options.script_path can
+        // be wired explicitly (auto-detection is unreliable in some environments).
         function loadTimelineBundle(useReact) {
             return new Promise(function (resolve, reject) {
                 var s = document.createElement('script');
                 s.id = 'timeline-script-tag';
                 s.src = useReact ? '../js/timeline.react.js' : '../js/timeline.js';
-                s.onload = function () { resolve(); };
+                s.onload = function () {
+                    var abs = new URL(s.src, window.location.href).toString();
+                    resolve(abs.substr(0, abs.lastIndexOf('/') + 1));
+                };
                 s.onerror = function () { reject(new Error('Failed to load ' + s.src)); };
                 document.head.appendChild(s);
             });
@@ -175,7 +180,8 @@
             options.soundcite = true;
             window.options = options;
 
-            loadTimelineBundle(!!options.theme).then(function () {
+            loadTimelineBundle(!!options.theme).then(function (script_path) {
+                options.script_path = options.script_path || script_path;
                 if (options.theme && TL.TimelineReact) {
                     window.timeline = new TL.TimelineReact('timeline-embed', options.source, options);
                 } else {

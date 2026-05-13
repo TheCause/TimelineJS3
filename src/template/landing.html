@@ -1,0 +1,1189 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>@thecause/timelinejs — Timeline JSON viewer</title>
+<meta name="description" content="Visualisez n'importe quelle timeline TimelineJS3 à partir d'une URL JSON, en trois styles : Archive (recherche), Cinematic (vidéo), Editorial (magazine).">
+<meta property="og:title" content="@thecause/timelinejs">
+<meta property="og:description" content="Trois rendus React pour vos timelines JSON.">
+<meta property="og:image" content="/landing-og.png">
+<meta name="theme-color" content="#15130e">
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' fill='%230a0a0c'/><circle cx='6' cy='12' r='2' fill='%23a8c9c4'/><circle cx='12' cy='12' r='2' fill='%23efe8d8'/><circle cx='18' cy='12' r='2' fill='%23e8d4a8'/><path d='M2 12h20' stroke='%23efe8d8' stroke-opacity='.3' stroke-width='.5'/></svg>">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-cinematic: #0a0a0c;
+  --bg-archive-sepia: #efe8d8;
+  --bg-editorial: #f5efe5;
+  --ink-dark: #efe8d8;
+  --ink-light: #1c1812;
+  --accent: oklch(70% 0.16 198);
+  --accent-warm: oklch(75% 0.14 60);
+  --error: oklch(60% 0.18 25);
+  --font-serif: "Newsreader", Georgia, serif;
+  --font-sans: "Inter Tight", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-display: "Archivo", system-ui, sans-serif;
+  --page-x: clamp(20px, 5vw, 64px);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg-cinematic);
+  color: var(--ink-dark);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+a { color: inherit; }
+button { font: inherit; }
+
+/* ---------- a11y ---------- */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0;
+  margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+.sr-only:focus {
+  position: fixed; top: 8px; left: 8px; width: auto; height: auto;
+  clip: auto; padding: 8px 12px; background: var(--accent); color: #06181a;
+  font-family: var(--font-mono); font-size: 11px; z-index: 1000;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ---------- header ---------- */
+.hdr {
+  position: fixed; top: 0; left: 0; right: 0; height: 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--page-x);
+  background: rgba(10,10,12,.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  z-index: 100;
+  font-family: var(--font-mono);
+}
+.hdr .brand {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-dark);
+  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.hdr .brand-mark {
+  display: inline-flex; gap: 3px; align-items: center;
+}
+.hdr .brand-mark i {
+  width: 4px; height: 4px; border-radius: 50%; background: var(--accent);
+  display: inline-block;
+}
+.hdr .brand-mark i:nth-child(2) { background: var(--ink-dark); }
+.hdr .brand-mark i:nth-child(3) { background: var(--accent-warm); }
+.hdr nav { display: flex; gap: 22px; }
+.hdr nav a {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(240,238,233,.7);
+  text-decoration: none;
+  text-transform: lowercase;
+  transition: color .15s;
+}
+.hdr nav a:hover { color: var(--ink-dark); }
+@media (max-width: 480px) {
+  .hdr nav { display: none; }
+  .hdr .hamburger {
+    display: inline-flex; flex-direction: column; gap: 3px;
+    background: none; border: 0; padding: 6px; cursor: pointer;
+  }
+  .hdr .hamburger i {
+    width: 18px; height: 1px; background: var(--ink-dark); display: block;
+  }
+}
+.hdr .hamburger { display: none; }
+
+/* ---------- hero ---------- */
+.hero {
+  min-height: calc(100dvh - 40px);
+  margin-top: 40px;
+  position: relative;
+  padding: clamp(48px, 9vh, 120px) var(--page-x) clamp(40px, 6vh, 80px);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.hero::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 30%, oklch(30% 0.04 220 / .35), transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, oklch(40% 0.08 60 / .15), transparent 70%);
+}
+.hero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent 80%);
+}
+.hero-inner {
+  position: relative; z-index: 1;
+  max-width: 760px; width: 100%;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 24px;
+  display: inline-flex; align-items: center; gap: 10px;
+}
+.eyebrow::before {
+  content: ""; width: 18px; height: 1px;
+  background: var(--accent);
+}
+.hero h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(44px, 7.2vw, 72px);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 0 0 24px;
+  color: var(--ink-dark);
+  text-wrap: balance;
+}
+.hero h1 .muted { color: rgba(240,238,233,.55); display: block; }
+.hero .sub {
+  font-size: 17px;
+  line-height: 1.55;
+  color: rgba(240,238,233,.7);
+  max-width: 600px;
+  margin: 0 0 36px;
+  text-wrap: pretty;
+}
+
+/* ---------- form ---------- */
+.form {
+  display: flex; flex-direction: column; gap: 18px;
+  padding: 22px;
+  background: rgba(255,255,255,.025);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 6px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.form-row {
+  display: flex; align-items: stretch; gap: 12px;
+}
+.url-wrap {
+  flex: 1; min-width: 0; position: relative;
+}
+.url-label {
+  position: absolute; top: 9px; left: 18px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(240,238,233,.4);
+  pointer-events: none;
+  z-index: 1;
+}
+input[type="url"] {
+  width: 100%;
+  height: 56px;
+  padding: 24px 18px 8px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(255,255,255,.04);
+  color: var(--ink-dark);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  border-radius: 4px;
+  transition: border-color .15s, box-shadow .15s;
+}
+input[type="url"]::placeholder {
+  color: rgba(240,238,233,.3);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+input[type="url"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px oklch(70% 0.16 198 / .15);
+}
+input[type="url"][aria-invalid="true"] {
+  border-color: var(--error);
+  box-shadow: 0 0 0 3px oklch(60% 0.18 25 / .15);
+}
+.submit {
+  flex: 0 0 56px;
+  width: 56px; height: 56px;
+  border-radius: 6px;
+  border: 0;
+  background: var(--accent);
+  color: #06181a;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform .15s, box-shadow .15s, opacity .15s, background .2s;
+}
+.submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px oklch(70% 0.16 198 / 0.4);
+}
+.submit:disabled { opacity: 0.3; cursor: not-allowed; }
+.submit[data-state="error"] {
+  background: var(--error);
+  color: #1a0708;
+}
+.submit svg { width: 18px; height: 18px; }
+.submit .spinner {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(6,24,26,.3);
+  border-top-color: #06181a;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.fieldsets {
+  display: flex; flex-wrap: wrap; gap: 20px 28px;
+}
+.fieldset { display: flex; align-items: center; gap: 10px; }
+.fieldset > .legend {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(240,238,233,.5);
+}
+.pillgroup { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; background: rgba(0,0,0,.2); }
+.pill {
+  position: relative;
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(240,238,233,.6);
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color .15s, background .15s;
+}
+.pill input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+.pill:has(input:checked) {
+  background: var(--ink-dark);
+  color: var(--ink-light);
+}
+.pill:hover:not(:has(input:checked)) { color: var(--ink-dark); }
+
+.message {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255,255,255,.4);
+  min-height: 16px;
+  letter-spacing: 0.02em;
+}
+.message[data-state="error"] { color: var(--error); }
+.message[data-state="loading"] { color: var(--accent); }
+.message[data-state="success"] { color: var(--accent); }
+
+.fallback {
+  margin-top: 22px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgba(240,238,233,.5);
+}
+.fallback a {
+  color: rgba(240,238,233,.85);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(240,238,233,.3);
+  cursor: pointer;
+}
+.fallback a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+
+/* ---------- section common ---------- */
+.section {
+  padding: clamp(72px, 12vh, 140px) var(--page-x);
+}
+.section-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 56px;
+  flex-wrap: wrap;
+}
+.section h2 {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(28px, 4.4vw, 44px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+.section .tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(28,24,18,.5);
+}
+.dark-section h2 { color: var(--ink-dark); }
+.dark-section .tag { color: rgba(240,238,233,.5); }
+
+/* ---------- skins-grid (archive sepia) ---------- */
+.skins {
+  background: var(--bg-archive-sepia);
+  color: var(--ink-light);
+}
+.skin-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+@media (max-width: 1023px) { .skin-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .skin-grid { grid-template-columns: 1fr; } }
+
+.skin-card {
+  position: relative;
+  display: flex; flex-direction: column;
+  background: #fbf6e9;
+  border: 1px solid rgba(28,24,18,.1);
+  border-radius: 4px;
+  overflow: hidden;
+  transition: transform .25s cubic-bezier(.2,.6,.2,1), box-shadow .25s, border-color .25s;
+}
+.skin-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 40px -10px rgba(28,24,18,.25);
+  border-color: rgba(28,24,18,.2);
+}
+.skin-card .preview {
+  aspect-ratio: 4/5;
+  width: 100%;
+  background: var(--bg-archive-sepia);
+  display: block;
+  border-bottom: 1px solid rgba(28,24,18,.08);
+}
+.skin-card .body {
+  padding: 20px 22px 22px;
+  display: flex; flex-direction: column; gap: 10px;
+  flex: 1;
+}
+.skin-card h3 {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.skin-card p {
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+  color: rgba(28,24,18,.7);
+}
+.skin-card .badge {
+  margin-top: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(28,24,18,.55);
+  display: inline-flex; align-items: center; gap: 8px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(28,24,18,.15);
+}
+.skin-card .preview-link {
+  position: absolute; top: 14px; right: 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: rgba(10,10,12,.9);
+  color: var(--ink-dark);
+  padding: 7px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity .2s, transform .2s;
+  backdrop-filter: blur(4px);
+}
+.skin-card:hover .preview-link,
+.skin-card:focus-within .preview-link { opacity: 1; transform: translateY(0); }
+.skin-card .preview-link:focus-visible { opacity: 1; transform: translateY(0); }
+
+/* ---------- json format (editorial) ---------- */
+.json-section {
+  background: var(--bg-editorial);
+  color: var(--ink-light);
+}
+.json-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 56px;
+  align-items: start;
+}
+@media (max-width: 1023px) {
+  .json-grid { grid-template-columns: 1fr; gap: 32px; }
+}
+.json-prose {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 480px;
+  color: rgba(28,24,18,.85);
+}
+.json-prose ul {
+  list-style: none;
+  padding: 0; margin: 0 0 20px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.json-prose li {
+  display: flex; gap: 12px; padding-left: 0;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.json-prose li::before {
+  content: "→";
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  color: rgba(28,24,18,.4);
+}
+.json-prose code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: rgba(28,24,18,.06);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.json-prose .links {
+  display: flex; flex-direction: column; gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(28,24,18,.12);
+}
+.json-prose .links a {
+  color: var(--ink-light);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(28,24,18,.3);
+}
+.json-prose .links a:hover { text-decoration-color: var(--ink-light); }
+
+.code-block {
+  background: #1c1812;
+  color: #efe8d8;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  padding: 24px 28px;
+  border-radius: 4px;
+  overflow-x: auto;
+  position: relative;
+  box-shadow: 0 24px 60px -24px rgba(28,24,18,.35);
+}
+.code-block::before {
+  content: "events[0].json";
+  position: absolute; top: 0; left: 0; right: 0;
+  padding: 10px 28px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7a7066;
+  border-bottom: 1px solid rgba(239,232,216,.08);
+  background: rgba(0,0,0,.25);
+  border-radius: 4px 4px 0 0;
+}
+.code-block pre {
+  margin: 0;
+  padding-top: 32px;
+  white-space: pre;
+}
+.code-block .k { color: #a8c9c4; }
+.code-block .s { color: #e8d4a8; }
+.code-block .c { color: #7a7066; font-style: italic; }
+.code-block .p { color: #7a7066; }
+
+/* ---------- examples (cinematic) ---------- */
+.examples {
+  background: var(--bg-cinematic);
+  color: var(--ink-dark);
+  position: relative;
+}
+.examples::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 70% 50% at 20% 0%, oklch(40% 0.08 60 / .15), transparent 70%);
+}
+.example-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+@media (max-width: 768px) {
+  .example-grid {
+    display: flex; gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin: 0 calc(var(--page-x) * -1);
+    padding: 0 var(--page-x) 16px;
+  }
+  .example-grid > * { flex: 0 0 280px; scroll-snap-align: start; }
+}
+.example-card {
+  display: flex; flex-direction: column;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 4px;
+  background: rgba(255,255,255,.02);
+  text-decoration: none; color: inherit;
+  overflow: hidden;
+  transition: border-color .2s, transform .25s, background .25s;
+}
+.example-card:hover {
+  border-color: rgba(255,255,255,.2);
+  background: rgba(255,255,255,.04);
+  transform: translateY(-2px);
+}
+.example-card.disabled {
+  opacity: 0.45;
+  pointer-events: none;
+  cursor: default;
+}
+.example-card .thumb {
+  aspect-ratio: 16/9;
+  width: 100%;
+  display: block;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.example-card .meta {
+  padding: 16px 18px 18px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.example-card h4 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.example-card .sub {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(240,238,233,.5);
+  display: flex; gap: 14px;
+}
+.example-card .sub span { display: inline-flex; align-items: center; gap: 6px; }
+.example-card .sub i {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: rgba(240,238,233,.4);
+}
+
+/* ---------- footer ---------- */
+footer {
+  background: #15130e;
+  color: rgba(240,238,233,.7);
+  padding: 64px var(--page-x) 0;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 48px;
+  padding-bottom: 48px;
+}
+@media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr; gap: 32px; } }
+.footer-col h5 {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(240,238,233,.4);
+  margin: 0 0 14px;
+  font-weight: 500;
+}
+.footer-col p, .footer-col li {
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+  color: rgba(240,238,233,.7);
+}
+.footer-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.footer-col a {
+  color: rgba(240,238,233,.85);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(240,238,233,.15);
+  padding-bottom: 1px;
+  transition: border-color .2s, color .2s;
+}
+.footer-col a:hover { color: var(--ink-dark); border-color: var(--accent); }
+.footer-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 0;
+  border-top: 1px solid rgba(240,238,233,.1);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(240,238,233,.4);
+  flex-wrap: wrap; gap: 12px;
+}
+
+/* ---------- mobile form ---------- */
+@media (max-width: 600px) {
+  .form-row { flex-direction: column; }
+  .submit { width: 100%; height: 52px; }
+  .fieldsets { flex-direction: column; gap: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<a class="sr-only" href="#main">Aller au contenu</a>
+
+<header class="hdr">
+  <a class="brand" href="/">
+    <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+    @thecause/timelinejs
+  </a>
+  <nav aria-label="Liens principaux">
+    <a href="DOCUMENTATION.md">docs</a>
+    <a href="examples/sample.json">format json</a>
+    <a href="https://github.com/TheCause/TimelineJS3" target="_blank" rel="noopener">github</a>
+  </nav>
+  <button class="hamburger" aria-label="Menu"><i></i><i></i><i></i></button>
+</header>
+
+<main id="main" class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Timeline JSON viewer · v0.1.0</div>
+
+    <h1>
+      Donnez une URL.
+      <span class="muted">On rend la timeline.</span>
+    </h1>
+
+    <p class="sub">Trois rendus React au-dessus de TimelineJS3 : Archive pour explorer, Cinematic pour projeter, Editorial pour publier.</p>
+
+    <form class="form" id="tlform" novalidate>
+      <div class="form-row">
+        <div class="url-wrap">
+          <label class="url-label" for="json-url">URL JSON</label>
+          <input
+            type="url"
+            id="json-url"
+            name="url"
+            placeholder="https://raw.githubusercontent.com/…/timeline.json"
+            autocomplete="url"
+            spellcheck="false"
+            required
+            aria-describedby="msg"
+            autofocus>
+        </div>
+        <button class="submit" type="submit" id="submit-btn" aria-label="Visualiser la timeline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <div class="fieldsets">
+        <fieldset class="fieldset">
+          <legend class="sr-only">Skin de rendu</legend>
+          <span class="legend" aria-hidden="true">Skin</span>
+          <div class="pillgroup" role="radiogroup" aria-label="Skin">
+            <label class="pill"><input type="radio" name="skin" value="archive"> Archive</label>
+            <label class="pill"><input type="radio" name="skin" value="cinematic"> Cinematic</label>
+            <label class="pill"><input type="radio" name="skin" value="editorial" checked> Editorial</label>
+          </div>
+        </fieldset>
+
+        <fieldset class="fieldset">
+          <legend class="sr-only">Langue</legend>
+          <span class="legend" aria-hidden="true">Lang</span>
+          <div class="pillgroup" role="radiogroup" aria-label="Langue">
+            <label class="pill"><input type="radio" name="lang" value="fr" checked> FR</label>
+            <label class="pill"><input type="radio" name="lang" value="en"> EN</label>
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="message" id="msg" role="status" aria-live="polite">URL acceptée : GitHub raw, S3, API custom, n'importe quoi qui renvoie du JSON.</div>
+    </form>
+
+    <div class="fallback">
+      Pas d'URL ? <a id="fallback-link" href="#">Essayer avec l'exemple « Conquête spatiale »</a>
+    </div>
+  </div>
+</main>
+
+<!-- ============== Trois manières de raconter ============== -->
+<section class="section skins" aria-labelledby="skins-h">
+  <div class="section-head">
+    <h2 id="skins-h">Trois manières de raconter.</h2>
+    <span class="tag">§ 02 · Skins</span>
+  </div>
+
+  <div class="skin-grid">
+    <!-- Archive -->
+    <article class="skin-card">
+      <a class="preview-link" href="embed/index.html?source=../examples/sample.json&theme=archive&lang=fr">Aperçu →</a>
+      <svg class="preview" viewBox="0 0 320 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Aperçu du skin Archive">
+        <rect width="320" height="400" fill="#efe8d8"/>
+        <!-- 3-col archive layout -->
+        <rect x="0" y="0" width="320" height="28" fill="#e3dcc8"/>
+        <text x="14" y="18" font-family="JetBrains Mono, monospace" font-size="8" fill="#1c1812" letter-spacing="2">ARCHIVE · 14 EVENTS</text>
+        <!-- left column: era filters -->
+        <rect x="14" y="42" width="84" height="344" fill="#fbf6e9" stroke="#d6cdb5" stroke-width="0.5"/>
+        <text x="22" y="58" font-family="JetBrains Mono, monospace" font-size="7" fill="#7a7066" letter-spacing="1.5">ÈRES</text>
+        <rect x="22" y="68" width="68" height="16" fill="#1c1812"/>
+        <text x="28" y="79" font-family="JetBrains Mono, monospace" font-size="7" fill="#efe8d8" letter-spacing="1">TOUTES</text>
+        <rect x="22" y="88" width="68" height="16" fill="none" stroke="#1c1812" stroke-width="0.5"/>
+        <text x="28" y="99" font-family="JetBrains Mono, monospace" font-size="7" fill="#1c1812">1957–1969</text>
+        <rect x="22" y="108" width="68" height="16" fill="none" stroke="#1c1812" stroke-width="0.5"/>
+        <text x="28" y="119" font-family="JetBrains Mono, monospace" font-size="7" fill="#1c1812">1970–1989</text>
+        <rect x="22" y="128" width="68" height="16" fill="none" stroke="#1c1812" stroke-width="0.5"/>
+        <text x="28" y="139" font-family="JetBrains Mono, monospace" font-size="7" fill="#1c1812">1990–2010</text>
+        <line x1="22" y1="160" x2="90" y2="160" stroke="#d6cdb5" stroke-width="0.5"/>
+        <text x="22" y="178" font-family="JetBrains Mono, monospace" font-size="7" fill="#7a7066" letter-spacing="1.5">RECHERCHE</text>
+        <rect x="22" y="186" width="68" height="14" fill="#fff" stroke="#d6cdb5" stroke-width="0.5"/>
+        <text x="26" y="196" font-family="JetBrains Mono, monospace" font-size="6" fill="#a8a08b">/</text>
+        <!-- middle column: list -->
+        <rect x="106" y="42" width="124" height="344" fill="#f5efe1"/>
+        <g font-family="Newsreader, serif">
+          <text x="116" y="62" font-size="10" fill="#1c1812" font-weight="600">Spoutnik 1</text>
+          <text x="116" y="74" font-size="7" fill="#7a7066" font-family="JetBrains Mono, monospace" letter-spacing="1">04.10.1957</text>
+          <line x1="116" y1="84" x2="220" y2="84" stroke="#d6cdb5"/>
+          <text x="116" y="100" font-size="10" fill="#1c1812" font-weight="600">Vostok 1</text>
+          <text x="116" y="112" font-size="7" fill="#7a7066" font-family="JetBrains Mono, monospace" letter-spacing="1">12.04.1961</text>
+          <line x1="116" y1="122" x2="220" y2="122" stroke="#d6cdb5"/>
+          <rect x="106" y="128" width="124" height="32" fill="#1c1812"/>
+          <text x="116" y="142" font-size="10" fill="#efe8d8" font-weight="600">Apollo 11</text>
+          <text x="116" y="154" font-size="7" fill="rgba(239,232,216,.6)" font-family="JetBrains Mono, monospace" letter-spacing="1">20.07.1969</text>
+          <text x="116" y="176" font-size="10" fill="#1c1812" font-weight="600">Mir</text>
+          <text x="116" y="188" font-size="7" fill="#7a7066" font-family="JetBrains Mono, monospace" letter-spacing="1">19.02.1986</text>
+          <line x1="116" y1="198" x2="220" y2="198" stroke="#d6cdb5"/>
+          <text x="116" y="214" font-size="10" fill="#1c1812" font-weight="600">ISS</text>
+          <text x="116" y="226" font-size="7" fill="#7a7066" font-family="JetBrains Mono, monospace" letter-spacing="1">20.11.1998</text>
+          <line x1="116" y1="236" x2="220" y2="236" stroke="#d6cdb5"/>
+          <text x="116" y="252" font-size="10" fill="#1c1812" font-weight="600">Curiosity</text>
+          <text x="116" y="264" font-size="7" fill="#7a7066" font-family="JetBrains Mono, monospace" letter-spacing="1">06.08.2012</text>
+          <line x1="116" y1="274" x2="220" y2="274" stroke="#d6cdb5"/>
+          <text x="116" y="290" font-size="10" fill="#1c1812" font-weight="600">Falcon Heavy</text>
+          <text x="116" y="302" font-size="7" fill="#7a7066" font-family="JetBrains Mono, monospace" letter-spacing="1">06.02.2018</text>
+        </g>
+        <!-- right column: detail -->
+        <rect x="236" y="42" width="70" height="344" fill="#fbf6e9" stroke="#d6cdb5" stroke-width="0.5"/>
+        <rect x="244" y="50" width="54" height="34" fill="#d6cdb5"/>
+        <text x="246" y="68" font-family="JetBrains Mono, monospace" font-size="5" fill="#7a7066">[ media ]</text>
+        <text x="244" y="98" font-family="Newsreader, serif" font-size="8" fill="#1c1812" font-weight="600">Apollo 11</text>
+        <line x1="244" y1="104" x2="298" y2="104" stroke="#d6cdb5"/>
+        <g font-family="Inter Tight, sans-serif" font-size="5" fill="#1c1812">
+          <text x="244" y="116">Premier homme sur</text>
+          <text x="244" y="124">la Lune. Mission</text>
+          <text x="244" y="132">portée par Saturn V</text>
+          <text x="244" y="140">depuis Kennedy.</text>
+        </g>
+      </svg>
+      <div class="body">
+        <h3>Archive</h3>
+        <p>Recherche, filtres par ère, navigation clavier. Pour quand le timeline est un corpus à interroger.</p>
+        <div class="badge"><span>Recherche</span><span>·</span><span>Documentaire</span></div>
+      </div>
+    </article>
+
+    <!-- Cinematic -->
+    <article class="skin-card">
+      <a class="preview-link" href="embed/index.html?source=../examples/sample.json&theme=cinematic&lang=fr">Aperçu →</a>
+      <svg class="preview" viewBox="0 0 320 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Aperçu du skin Cinematic">
+        <defs>
+          <radialGradient id="cinBg" cx="50%" cy="40%" r="70%">
+            <stop offset="0%" stop-color="#1a1a24"/>
+            <stop offset="60%" stop-color="#0a0a0c"/>
+            <stop offset="100%" stop-color="#000"/>
+          </radialGradient>
+          <linearGradient id="cinFade" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#0a0a0c" stop-opacity="0"/>
+            <stop offset="100%" stop-color="#0a0a0c" stop-opacity=".95"/>
+          </linearGradient>
+        </defs>
+        <rect width="320" height="400" fill="url(#cinBg)"/>
+        <!-- fullbleed media stand-in (Ken Burns) -->
+        <g opacity="0.55">
+          <circle cx="180" cy="150" r="80" fill="#3a3a4a"/>
+          <circle cx="200" cy="130" r="20" fill="#5a5a6a"/>
+          <circle cx="155" cy="170" r="14" fill="#2a2a3a"/>
+          <ellipse cx="180" cy="150" rx="78" ry="6" fill="#1a1a24" transform="rotate(-12 180 150)" opacity="0.4"/>
+        </g>
+        <rect width="320" height="400" fill="url(#cinFade)"/>
+        <!-- era pills top -->
+        <g font-family="JetBrains Mono, monospace" font-size="6" letter-spacing="1.5">
+          <rect x="14" y="14" width="44" height="14" rx="7" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.18)" stroke-width="0.5"/>
+          <text x="22" y="23" fill="#efe8d8">1957–69</text>
+          <rect x="62" y="14" width="56" height="14" rx="7" fill="oklch(70% 0.18 230 / .25)" stroke="oklch(70% 0.18 230)" stroke-width="0.5"/>
+          <text x="70" y="23" fill="oklch(85% 0.12 230)">CONQUÊTE</text>
+          <rect x="122" y="14" width="42" height="14" rx="7" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.18)" stroke-width="0.5"/>
+          <text x="130" y="23" fill="#efe8d8">SHUTTLE</text>
+        </g>
+        <!-- title block -->
+        <text x="20" y="260" font-family="JetBrains Mono, monospace" font-size="7" fill="oklch(75% 0.16 230)" letter-spacing="2.5">20 · JUILLET · 1969</text>
+        <text x="20" y="295" font-family="Archivo, sans-serif" font-size="32" font-weight="700" fill="#efe8d8" letter-spacing="-1">Apollo 11</text>
+        <text x="20" y="318" font-family="Inter Tight, sans-serif" font-size="9" fill="rgba(240,238,233,.7)">Premier homme sur la Lune.</text>
+        <text x="20" y="330" font-family="Inter Tight, sans-serif" font-size="9" fill="rgba(240,238,233,.7)">Apollo 11 atteint la mer de la Tranquillité.</text>
+        <!-- timeline rail -->
+        <line x1="20" y1="370" x2="300" y2="370" stroke="rgba(239,232,216,.15)" stroke-width="0.5"/>
+        <g>
+          <circle cx="40" cy="370" r="2.5" fill="oklch(70% 0.18 230)"/>
+          <circle cx="90" cy="370" r="2.5" fill="oklch(70% 0.18 230)"/>
+          <circle cx="140" cy="370" r="3.5" fill="oklch(75% 0.18 230)" stroke="oklch(85% 0.16 230)" stroke-width="1.5"/>
+          <circle cx="190" cy="370" r="2.5" fill="oklch(70% 0.18 60)"/>
+          <circle cx="240" cy="370" r="2.5" fill="oklch(70% 0.18 60)"/>
+          <circle cx="290" cy="370" r="2.5" fill="oklch(70% 0.18 320)"/>
+        </g>
+        <text x="20" y="388" font-family="JetBrains Mono, monospace" font-size="6" fill="rgba(239,232,216,.4)" letter-spacing="1.5">03/14 · ▶ AUTO</text>
+        <text x="270" y="388" font-family="JetBrains Mono, monospace" font-size="6" fill="rgba(239,232,216,.4)" letter-spacing="1.5">⛶</text>
+      </svg>
+      <div class="body">
+        <h3>Cinematic</h3>
+        <p>Lecture automatique, Ken Burns, plein écran. Pour exporter en vidéo ou projeter en conférence.</p>
+        <div class="badge"><span>Vidéo</span><span>·</span><span>Projection</span></div>
+      </div>
+    </article>
+
+    <!-- Editorial -->
+    <article class="skin-card">
+      <a class="preview-link" href="embed/index.html?source=../examples/sample.json&theme=editorial&lang=fr">Aperçu →</a>
+      <svg class="preview" viewBox="0 0 320 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Aperçu du skin Editorial">
+        <rect width="320" height="400" fill="#f5efe5"/>
+        <!-- page binding / spread -->
+        <line x1="160" y1="20" x2="160" y2="380" stroke="#d6cdb5" stroke-width="0.5" stroke-dasharray="2 3"/>
+        <!-- left page -->
+        <text x="20" y="36" font-family="JetBrains Mono, monospace" font-size="6" fill="#7a7066" letter-spacing="1.5">N° 03 — JUILLET 1969</text>
+        <line x1="20" y1="44" x2="148" y2="44" stroke="#1c1812" stroke-width="0.5"/>
+        <text x="20" y="78" font-family="Newsreader, serif" font-style="italic" font-size="20" fill="#1c1812" font-weight="500">Apollo</text>
+        <text x="20" y="100" font-family="Newsreader, serif" font-style="italic" font-size="20" fill="#1c1812" font-weight="500">Onze.</text>
+        <g font-family="Newsreader, serif" font-size="6.5" fill="#1c1812">
+          <text x="20" y="124">À 20h17 GMT, l'aigle se pose</text>
+          <text x="20" y="134">dans la mer de la Tranquillité.</text>
+          <text x="20" y="144">Armstrong descend l'échelle, on</text>
+          <text x="20" y="154">attend. Sa voix arrive sur Terre</text>
+          <text x="20" y="164">avec 1,3 seconde de retard.</text>
+          <text x="20" y="174">"Un petit pas pour l'homme…"</text>
+          <text x="20" y="190">Six cents millions de personnes</text>
+          <text x="20" y="200">regardent en noir et blanc, sur</text>
+          <text x="20" y="210">des télés de poste, dans des</text>
+          <text x="20" y="220">cafés, des amphithéâtres, des</text>
+          <text x="20" y="230">aéroports.</text>
+        </g>
+        <text x="20" y="370" font-family="JetBrains Mono, monospace" font-size="6" fill="#7a7066" letter-spacing="1.5">— 03 —</text>
+        <!-- right page: image -->
+        <rect x="170" y="36" width="130" height="240" fill="#d6cdb5"/>
+        <line x1="170" y1="36" x2="300" y2="36" stroke="#1c1812" stroke-width="0.5"/>
+        <line x1="170" y1="276" x2="300" y2="276" stroke="#1c1812" stroke-width="0.5"/>
+        <g opacity="0.5" transform="translate(170 36)">
+          <circle cx="65" cy="120" r="42" fill="#a89c80"/>
+          <circle cx="78" cy="105" r="10" fill="#bdb194"/>
+          <circle cx="52" cy="135" r="6" fill="#8a7e64"/>
+        </g>
+        <text x="170" y="294" font-family="JetBrains Mono, monospace" font-size="6" fill="#7a7066" letter-spacing="1.2">Fig. 03 — NASA, archives</text>
+        <g font-family="Newsreader, serif" font-size="6.5" fill="#1c1812">
+          <text x="170" y="316">Aldrin suit. Collins reste</text>
+          <text x="170" y="326">en orbite, seul humain de</text>
+          <text x="170" y="336">l'autre côté de la Lune. La</text>
+          <text x="170" y="346">mission revient le 24 juillet</text>
+          <text x="170" y="356">avec 22 kg de roche.</text>
+        </g>
+        <text x="270" y="370" font-family="JetBrains Mono, monospace" font-size="6" fill="#7a7066" letter-spacing="1.5">— 04 —</text>
+      </svg>
+      <div class="body">
+        <h3>Editorial</h3>
+        <p>Mise en page magazine, transitions page-turn. Pour intégrer dans un site éditorial.</p>
+        <div class="badge"><span>Site</span><span>·</span><span>Publication</span></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============== Format JSON ============== -->
+<section class="section json-section" aria-labelledby="format-h">
+  <div class="section-head">
+    <h2 id="format-h">Format attendu.</h2>
+    <span class="tag">§ 03 · Schéma</span>
+  </div>
+
+  <div class="json-grid">
+    <div class="json-prose">
+      <p style="margin: 0 0 18px; font-family: var(--font-serif); font-style: italic; font-size: 19px; line-height: 1.45; color: rgba(28,24,18,.85);">Strict minimum : une liste d'<code>events</code>, chaque event avec une date et un titre.</p>
+      <ul>
+        <li><span><code>events: [...]</code> requis, au moins 1.</span></li>
+        <li><span>Chaque event : <code>start_date.year</code> et <code>text.headline</code> obligatoires.</span></li>
+        <li><span><code>media.url</code> optionnel (Wikipedia, YouTube, Vimeo, image directe…).</span></li>
+        <li><span><code>eras: [...]</code> optionnel pour découper en périodes.</span></li>
+      </ul>
+      <div class="links">
+        <a href="https://timeline.knightlab.com/docs/json-format.html" target="_blank" rel="noopener">Schéma complet → docs upstream Knight Lab</a>
+        <a href="examples/sample.json">Voir examples/sample.json</a>
+      </div>
+    </div>
+
+    <div class="code-block" aria-hidden="false">
+<pre><span class="p">{</span>
+  <span class="k">"events"</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="k">"start_date"</span><span class="p">:</span> <span class="p">{</span> <span class="k">"year"</span><span class="p">:</span> <span class="s">"1969"</span><span class="p">,</span> <span class="k">"month"</span><span class="p">:</span> <span class="s">"7"</span><span class="p">,</span> <span class="k">"day"</span><span class="p">:</span> <span class="s">"20"</span> <span class="p">},</span>
+    <span class="k">"text"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="k">"headline"</span><span class="p">:</span> <span class="s">"Apollo 11"</span><span class="p">,</span>
+      <span class="k">"text"</span><span class="p">:</span> <span class="s">"Premier homme sur la Lune."</span>
+    <span class="p">},</span>
+    <span class="k">"media"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="k">"url"</span><span class="p">:</span> <span class="s">"https://en.wikipedia.org/wiki/Apollo_11"</span>
+    <span class="p">}</span>
+  <span class="p">}]</span>
+<span class="p">}</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============== Exemples ============== -->
+<section class="section examples dark-section" aria-labelledby="ex-h">
+  <div class="section-head">
+    <h2 id="ex-h">Quelques exemples.</h2>
+    <span class="tag">§ 04 · Public</span>
+  </div>
+
+  <div class="example-grid">
+    <a class="example-card" href="embed/index.html?source=../examples/sample.json&theme=editorial&lang=fr">
+      <svg class="thumb" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <rect width="320" height="180" fill="#0a0a0c"/>
+        <g opacity="0.55"><circle cx="160" cy="80" r="48" fill="#3a3a4a"/><circle cx="180" cy="62" r="14" fill="#5a5a6a"/></g>
+        <rect x="0" y="120" width="320" height="60" fill="#0a0a0c" opacity="0.6"/>
+        <text x="20" y="146" font-family="JetBrains Mono, monospace" font-size="7" fill="oklch(75% 0.16 230)" letter-spacing="2">1957 · 1969 · 2024</text>
+        <text x="20" y="166" font-family="Archivo, sans-serif" font-size="13" font-weight="700" fill="#efe8d8">Conquête spatiale</text>
+        <line x1="0" y1="178" x2="320" y2="178" stroke="rgba(239,232,216,.2)"/>
+      </svg>
+      <div class="meta">
+        <h4>Conquête spatiale</h4>
+        <div class="sub"><span>67 ans</span><i></i><span>14 events</span><i></i><span>Editorial</span></div>
+      </div>
+    </a>
+
+    <a class="example-card" href="https://github.com/TheCause/TimelineJS3/issues/new?title=Suggestion%20d%27exemple" target="_blank" rel="noopener">
+      <svg class="thumb" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="320" height="180" fill="rgba(255,255,255,.03)"/>
+        <line x1="0" y1="0" x2="320" y2="180" stroke="rgba(255,255,255,.05)"/>
+        <line x1="320" y1="0" x2="0" y2="180" stroke="rgba(255,255,255,.05)"/>
+        <text x="160" y="92" font-family="JetBrains Mono, monospace" font-size="11" fill="rgba(239,232,216,.55)" text-anchor="middle" letter-spacing="2">SUGGÉRER →</text>
+        <text x="160" y="108" font-family="Inter Tight, sans-serif" font-size="9" fill="rgba(239,232,216,.35)" text-anchor="middle">un exemple sur GitHub</text>
+      </svg>
+      <div class="meta">
+        <h4>Suggérer un exemple</h4>
+        <div class="sub"><span>GitHub Issues</span><i></i><span>2 min</span></div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <h5>À propos</h5>
+      <p>Fork de TimelineJS3 par Knight Lab. MPL-2.0.</p>
+      <p style="margin-top:8px;"><a href="NOTICE">NOTICE</a></p>
+    </div>
+    <div class="footer-col">
+      <h5>Liens</h5>
+      <ul>
+        <li><a href="https://github.com/TheCause/TimelineJS3" target="_blank" rel="noopener">GitHub repo</a></li>
+        <li><a href="https://github.com/TheCause/TimelineJS3/issues" target="_blank" rel="noopener">Issues</a></li>
+        <li><a href="https://github.com/TheCause/TimelineJS3/releases" target="_blank" rel="noopener">Releases</a></li>
+        <li><a href="https://timeline.knightlab.com/" target="_blank" rel="noopener">Doc upstream Knight Lab</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Crédits</h5>
+      <p>Régis Rigaud, 2026.</p>
+      <p style="margin-top:6px;">Pipeline data : Knight Lab.</p>
+    </div>
+  </div>
+  <div class="footer-bar">
+    <span>© 2026 · @thecause/timelinejs</span>
+    <span>v0.1.0</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  const form = document.getElementById('tlform');
+  const input = document.getElementById('json-url');
+  const msg = document.getElementById('msg');
+  const btn = document.getElementById('submit-btn');
+  const fallback = document.getElementById('fallback-link');
+
+  const MESSAGES = {
+    neutral: "URL acceptée : GitHub raw, S3, API custom, n'importe quoi qui renvoie du JSON.",
+    invalid: "⚠ URL invalide. Format attendu : https://example.com/timeline.json",
+    network: "⚠ Cette URL ne répond pas ou ne renvoie pas du JSON.",
+    loading: "Vérification…",
+    success: "→ Redirection vers l'embed…"
+  };
+
+  function setMessage(state, text) {
+    msg.dataset.state = state === 'neutral' ? '' : state;
+    msg.textContent = text || MESSAGES[state] || '';
+    input.setAttribute('aria-invalid', state === 'error' ? 'true' : 'false');
+  }
+
+  function updateSubmit() {
+    btn.disabled = !input.value.trim();
+  }
+
+  // ---- prefill from localStorage / query ----
+  // Only restore values that look like absolute URLs — relative paths like
+  // "examples/sample.json" would immediately trip the strict URL validator
+  // and put the form into a misleading red state on page load.
+  try {
+    const last = localStorage.getItem('last-url');
+    if (last && /^https?:\/\//i.test(last)) input.value = last;
+  } catch (e) {}
+
+  const qs = new URLSearchParams(location.search);
+  const qJson = qs.get('json');
+  const qTheme = qs.get('theme');
+  const qLang = qs.get('lang');
+  if (qJson) input.value = qJson;
+  if (qTheme) {
+    const r = form.querySelector('input[name="skin"][value="' + qTheme + '"]');
+    if (r) r.checked = true;
+  }
+  if (qLang) {
+    const r = form.querySelector('input[name="lang"][value="' + qLang + '"]');
+    if (r) r.checked = true;
+  }
+
+  updateSubmit();
+  input.addEventListener('input', () => { updateSubmit(); if (msg.dataset.state === 'error') setMessage('neutral'); });
+
+  function buildEmbedUrl(url, skin, lang) {
+    // The embed lives one level deeper (embed/index.html), so a relative
+    // `source` path needs to climb one level up to remain resolvable.
+    let source = url;
+    if (!/^https?:\/\//i.test(source) && !source.startsWith('/')) {
+      source = '../' + source;
+    }
+    return 'embed/index.html?source=' + encodeURIComponent(source) + '&theme=' + encodeURIComponent(skin) + '&lang=' + encodeURIComponent(lang);
+  }
+
+  function setBtnState(state) {
+    btn.dataset.state = state;
+    if (state === 'loading') {
+      btn.innerHTML = '<span class="spinner" aria-hidden="true"></span>';
+      btn.disabled = true;
+    } else if (state === 'error') {
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 8v5M12 17h.01"/></svg>';
+      btn.disabled = false;
+    } else {
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+      btn.disabled = !input.value.trim();
+    }
+  }
+
+  async function submitForm() {
+    const url = input.value.trim();
+    if (!url) return;
+
+    // 1) parse check
+    let parsed;
+    try { parsed = new URL(url); }
+    catch (e) {
+      setMessage('error', MESSAGES.invalid);
+      setBtnState('error');
+      return;
+    }
+    if (!/^https?:$/.test(parsed.protocol)) {
+      setMessage('error', MESSAGES.invalid);
+      setBtnState('error');
+      return;
+    }
+
+    setMessage('loading', MESSAGES.loading);
+    setBtnState('loading');
+
+    // 2) HEAD probe (best-effort, 3s timeout) — failure is non-blocking by default
+    //    The brief says "optionnel mais recommandé"; we keep it soft (warn but redirect anyway)
+    //    so CORS-blocked hosts still work.
+    let reachable = true;
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 3000);
+      const r = await fetch(url, { method: 'HEAD', mode: 'cors', signal: ctrl.signal }).catch(() => null);
+      clearTimeout(t);
+      if (r && !r.ok) reachable = false;
+    } catch (e) { /* CORS preflight failure — ignore, still try */ }
+
+    if (!reachable) {
+      setMessage('error', MESSAGES.network);
+      setBtnState('error');
+      return;
+    }
+
+    // 3) persist + redirect
+    try { localStorage.setItem('last-url', url); } catch (e) {}
+
+    const skin = (form.querySelector('input[name="skin"]:checked') || {}).value || 'editorial';
+    const lang = (form.querySelector('input[name="lang"]:checked') || {}).value || 'fr';
+
+    setMessage('success', MESSAGES.success);
+    setTimeout(() => {
+      window.location.href = buildEmbedUrl(url, skin, lang);
+    }, 300);
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitForm();
+  });
+
+  fallback.addEventListener('click', (e) => {
+    e.preventDefault();
+    // Bypass the strict URL validator for the bundled example, which uses a
+    // relative path. Just build the embed URL and go.
+    const lang = (form.querySelector('input[name="lang"]:checked') || {}).value || 'fr';
+    setMessage('success', MESSAGES.success);
+    setTimeout(() => {
+      window.location.href = buildEmbedUrl('examples/sample.json', 'editorial', lang);
+    }, 200);
+  });
+
+  // Auto-submit when arriving with ?json=
+  if (qJson) {
+    setTimeout(submitForm, 300);
+  }
+})();
+</script>
+
+</body>
+</html>

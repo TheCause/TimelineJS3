@@ -15,6 +15,22 @@ const SKINS = {
     editorial: { Component: DirectionEditorial, key: 'editorial' },
 };
 
+// Find the directory the bundle was loaded from, so loadLanguage can resolve
+// locale JSON relative to it. Mirrors Timeline.determineScriptPath().
+function detectScriptPath() {
+    if (typeof document === 'undefined') return '';
+    const tagged = document.getElementById('timeline-script-tag');
+    if (tagged && tagged.src) return tagged.src.substr(0, tagged.src.lastIndexOf('/') + 1);
+    const scripts = document.getElementsByTagName('script');
+    for (let i = scripts.length - 1; i >= 0; i--) {
+        const src = scripts[i].src || '';
+        if (/timeline(\.react)?\.js(\?|$)/.test(src)) {
+            return src.substr(0, src.lastIndexOf('/') + 1);
+        }
+    }
+    return '';
+}
+
 /**
  * React-backed mount point for TimelineJS data. Mirrors the surface of the
  * vanilla `Timeline` class (same `(elem, data, options)` signature) but
@@ -51,7 +67,7 @@ export class TimelineReact {
         const code = this._options.language || this._options.lang;
         if (code) {
             try {
-                const loaded = await loadLanguage(code, this._options.script_path || '');
+                const loaded = await loadLanguage(code, this._options.script_path || detectScriptPath());
                 if (loaded) language = loaded;
             } catch (_e) { /* keep fallback */ }
         }

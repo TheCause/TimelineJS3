@@ -25,6 +25,16 @@ module.exports = {
                 {
                     from: './src/embed/*',
                     to: path.join(output_path, "embed/[name][ext]")
+                },
+                {
+                    // Landing page lives at dist root so its relative paths
+                    // (./embed/, ./examples/) resolve against the deployed root.
+                    from: './src/template/landing.html',
+                    to: path.join(output_path, "index.html")
+                },
+                {
+                    from: './examples/sample.json',
+                    to: path.join(output_path, "examples/sample.json")
                 }
             ]
         }),
