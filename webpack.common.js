@@ -28,9 +28,14 @@ module.exports = {
                 },
                 {
                     // Landing page lives at dist root so its relative paths
-                    // (./embed/, ./examples/) resolve against the deployed root.
+                    // (./view.html, ./examples/) resolve against the deployed root.
                     from: './src/template/landing.html',
                     to: path.join(output_path, "index.html")
+                },
+                {
+                    // Full-page viewer (alternative to the iframe embed).
+                    from: './src/template/view.html',
+                    to: path.join(output_path, "view.html")
                 },
                 {
                     from: './examples/sample.json',

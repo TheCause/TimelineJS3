@@ -751,7 +751,7 @@ footer {
   <div class="skin-grid">
     <!-- Archive -->
     <article class="skin-card">
-      <a class="preview-link" href="embed/index.html?source=../examples/sample.json&theme=archive&lang=fr">Aperçu →</a>
+      <a class="preview-link" href="view.html?source=examples/sample.json&theme=archive&lang=fr">Aperçu →</a>
       <svg class="preview" viewBox="0 0 320 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Aperçu du skin Archive">
         <rect width="320" height="400" fill="#efe8d8"/>
         <!-- 3-col archive layout -->
@@ -818,7 +818,7 @@ footer {
 
     <!-- Cinematic -->
     <article class="skin-card">
-      <a class="preview-link" href="embed/index.html?source=../examples/sample.json&theme=cinematic&lang=fr">Aperçu →</a>
+      <a class="preview-link" href="view.html?source=examples/sample.json&theme=cinematic&lang=fr">Aperçu →</a>
       <svg class="preview" viewBox="0 0 320 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Aperçu du skin Cinematic">
         <defs>
           <radialGradient id="cinBg" cx="50%" cy="40%" r="70%">
@@ -876,7 +876,7 @@ footer {
 
     <!-- Editorial -->
     <article class="skin-card">
-      <a class="preview-link" href="embed/index.html?source=../examples/sample.json&theme=editorial&lang=fr">Aperçu →</a>
+      <a class="preview-link" href="view.html?source=examples/sample.json&theme=editorial&lang=fr">Aperçu →</a>
       <svg class="preview" viewBox="0 0 320 400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Aperçu du skin Editorial">
         <rect width="320" height="400" fill="#f5efe5"/>
         <!-- page binding / spread -->
@@ -975,7 +975,7 @@ footer {
   </div>
 
   <div class="example-grid">
-    <a class="example-card" href="embed/index.html?source=../examples/sample.json&theme=editorial&lang=fr">
+    <a class="example-card" href="view.html?source=examples/sample.json&theme=editorial&lang=fr">
       <svg class="thumb" viewBox="0 0 320 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
         <rect width="320" height="180" fill="#0a0a0c"/>
         <g opacity="0.55"><circle cx="160" cy="80" r="48" fill="#3a3a4a"/><circle cx="180" cy="62" r="14" fill="#5a5a6a"/></g>
@@ -1088,13 +1088,10 @@ footer {
   input.addEventListener('input', () => { updateSubmit(); if (msg.dataset.state === 'error') setMessage('neutral'); });
 
   function buildEmbedUrl(url, skin, lang) {
-    // The embed lives one level deeper (embed/index.html), so a relative
-    // `source` path needs to climb one level up to remain resolvable.
-    let source = url;
-    if (!/^https?:\/\//i.test(source) && !source.startsWith('/')) {
-      source = '../' + source;
-    }
-    return 'embed/index.html?source=' + encodeURIComponent(source) + '&theme=' + encodeURIComponent(skin) + '&lang=' + encodeURIComponent(lang);
+    // The standalone viewer (view.html) sits at the same level as the landing,
+    // so relative `source` paths resolve against the deployed root with no
+    // gymnastics required.
+    return 'view.html?source=' + encodeURIComponent(url) + '&theme=' + encodeURIComponent(skin) + '&lang=' + encodeURIComponent(lang);
   }
 
   function setBtnState(state) {
@@ -1175,6 +1172,7 @@ footer {
     setMessage('success', MESSAGES.success);
     setTimeout(() => {
       window.location.href = buildEmbedUrl('examples/sample.json', 'editorial', lang);
+      // (view.html sits at the same level as the landing → relative source OK)
     }, 200);
   });
 

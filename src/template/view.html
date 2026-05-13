@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <title>Timeline · @thecause/timelinejs</title>
+    <meta charset="utf-8">
+    <meta name="description" content="Viewer plein écran @thecause/timelinejs.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <meta property="og:title" content="Timeline · @thecause/timelinejs">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#15130e">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Archivo:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/timeline.css">
+
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            padding: 0;
+            margin: 0;
+            background: #15130e;
+            overflow: hidden;
+            font-family: "Inter Tight", system-ui, -apple-system, sans-serif;
+        }
+        #timeline-view {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #fatal-error {
+            position: fixed; inset: 0; display: none;
+            align-items: center; justify-content: center;
+            color: rgba(239,232,216,.85);
+            font-family: "JetBrains Mono", monospace;
+            font-size: 13px;
+            padding: 32px;
+            text-align: center;
+        }
+        #fatal-error.on { display: flex; }
+        #fatal-error a { color: oklch(70% 0.16 198); }
+        #fatal-error code { color: rgba(239,232,216,.6); }
+    </style>
+</head>
+
+<body>
+    <div id="timeline-view"></div>
+    <div id="fatal-error" role="alert"></div>
+
+    <script type="text/javascript">
+        function ready(fn) {
+            if (document.readyState !== 'loading') fn();
+            else document.addEventListener('DOMContentLoaded', fn);
+        }
+
+        function optionsFromUrlParams() {
+            var qs = new URLSearchParams(window.location.search);
+            var out = {};
+            qs.forEach(function (v, k) { out[k] = v; });
+            return out;
+        }
+
+        function setPageLanguage(lang) {
+            if (lang) document.documentElement.setAttribute('lang', lang);
+        }
+
+        function stripTags(s) { return String(s || '').replace(/<[^>]*>/g, '').trim(); }
+
+        // Pick bundle based on ?theme=. React skin if any theme given.
+        function loadTimelineBundle(useReact) {
+            return new Promise(function (resolve, reject) {
+                var s = document.createElement('script');
+                s.id = 'timeline-script-tag';
+                s.src = useReact ? 'js/timeline.react.js' : 'js/timeline.js';
+                s.onload = function () {
+                    var abs = new URL(s.src, window.location.href).toString();
+                    resolve(abs.substr(0, abs.lastIndexOf('/') + 1));
+                };
+                s.onerror = function () { reject(new Error('Failed to load ' + s.src)); };
+                document.head.appendChild(s);
+            });
+        }
+
+        // Render fatal-error message using DOM nodes only (no innerHTML).
+        function fatal(message, hint) {
+            var el = document.getElementById('fatal-error');
+            while (el.firstChild) el.removeChild(el.firstChild);
+            var wrap = document.createElement('div');
+            var msg = document.createElement('p');
+            msg.textContent = message;
+            msg.style.marginBottom = '12px';
+            wrap.appendChild(msg);
+            if (hint) wrap.appendChild(hint);
+            el.appendChild(wrap);
+            el.classList.add('on');
+        }
+
+        function buildMissingSourceHint() {
+            var hint = document.createElement('p');
+            hint.style.opacity = '0.7';
+            hint.appendChild(document.createTextNode('Ajoutez '));
+            var code = document.createElement('code');
+            code.textContent = '?source=<URL_JSON>';
+            hint.appendChild(code);
+            hint.appendChild(document.createTextNode(' à l’URL ou utilisez la '));
+            var link = document.createElement('a');
+            link.href = './';
+            link.textContent = 'landing';
+            hint.appendChild(link);
+            hint.appendChild(document.createTextNode('.'));
+            return hint;
+        }
+
+        ready(function () {
+            var options = optionsFromUrlParams();
+            setPageLanguage(options.lang || options.language);
+
+            if (!options.source) {
+                fatal('Aucune source fournie.', buildMissingSourceHint());
+                return;
+            }
+
+            // Defaults that make sense for a standalone viewer (vs an iframe):
+            //  - standalone=true so the React skins use URL-hash routing.
+            //  - container fills the viewport, no iframe gymnastics.
+            options.standalone = options.standalone !== 'false';
+
+            loadTimelineBundle(!!options.theme)
+                .then(function (script_path) {
+                    options.script_path = options.script_path || script_path;
+                    var TL = window.TL;
+                    if (!TL) { fatal('Bundle TimelineJS introuvable.'); return; }
+
+                    try {
+                        if (options.theme && TL.TimelineReact) {
+                            window.timeline = new TL.TimelineReact('timeline-view', options.source, options);
+                        } else {
+                            window.timeline = new TL.Timeline('timeline-view', options.source, options);
+                        }
+                    } catch (e) {
+                        fatal('Erreur d’instanciation : ' + (e && e.message ? e.message : String(e)));
+                    }
+                })
+                .catch(function (e) {
+                    fatal('Impossible de charger le bundle : ' + (e && e.message ? e.message : String(e)));
+                });
+        });
+    </script>
+</body>
+</html>
