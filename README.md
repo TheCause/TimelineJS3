@@ -1,42 +1,135 @@
-TimelineJS3
-============
+timelinejs-react-skins
+======================
 
-TimelineJS v3: A Storytelling Timeline built in JavaScript.  https://timeline.knightlab.com
+A fork of **TimelineJS3** (Northwestern University Knight Lab) that layers three
+React-based rendering "skins" on top of the existing data pipeline.
 
-## Overview
+Upstream: https://github.com/NUKnightLab/TimelineJS3 — original docs at https://timeline.knightlab.com
+License: MPL-2.0 (see [LICENSE](LICENSE) and [NOTICE](NOTICE)).
 
-TimelineJS is a tool designed to help people with minimal technical skill tell rich, dynamic stories on the web. Most people will create timelines using the [official authoring tool](http://timeline.knightlab.com/#make) and embed their creations using a snip of HTML code offered at the end of that process. 
+## What this fork adds
 
-For users of these content management systems (CMSes), there are plugins to facilitate the embedding process:
+- Three alternative rendering directions, opt-in via `options.theme`:
+  - **`archive`** — research/database viewer with three palettes (sépia/clair/sombre), search, era filters, density toggle, URL hash routing in standalone mode, keyboard navigation.
+  - **`cinematic`** — full-bleed media, Ken-Burns crossfade, autoplay with adjustable per-slide duration, fullscreen, minimal mode.
+  - **`editorial`** — magazine-spread layout with crossfade page-turn, era bands, generous typography.
+- **`TimelineReact`** — a React-backed mount class with the same `(elem, data, options)` signature as the vanilla `Timeline`.
+- **Two bundles**: `dist/js/timeline.js` (vanilla, unchanged) and `dist/js/timeline.react.js` (vanilla + React + skins). React only ships in the second bundle, so existing iframe consumers pay zero extra bytes.
+- **i18n**: FR (default) and EN dicts in `src/js/react/labels.js`; selected automatically from `options.language`.
+- The vanilla rendering pipeline (Google Sheets / CSV / JSON loading via `ConfigFactory`, `TimelineConfig`, `MediaType`, dates, locales) is **untouched**.
 
-* [Wordpress](https://wordpress.org/plugins/knight-lab-timelinejs/)
-* [MediaWiki](https://www.mediawiki.org/wiki/Extension:Modern_Timeline)
-* [Drupal](https://www.drupal.org/docs/8/modules/views-timelinejs)
+## Quick start
 
+### Iframe embed
 
-## Getting Started
+The embed page accepts a `?theme=` query param. Without it, the vanilla bundle is loaded and behaves exactly as upstream.
 
-General users of TimelineJS should consult [timeline.knightlab.com](https://timeline.knightlab.com) for instructions and documentation. Information on GitHub is primarily directed at those who are interested in working with the TimelineJS source code.
+```
+…/embed/index.html?source=<YOUR_DATA>&theme=archive
+…/embed/index.html?source=<YOUR_DATA>&theme=cinematic&lang=en
+```
 
-The [authoritative documentation list](https://timeline.knightlab.com/docs/) is also on the main website, but here are some direct links which may be useful:
+### Programmatic — vanilla (unchanged)
 
-* [Available media types](https://timeline.knightlab.com/docs/media-types.html), relevant to users of any technical level
-* [Instantiate a Timeline in your page instead of using an embed](https://timeline.knightlab.com/docs/instantiate-a-timeline.html)
-* [Configuration options](https://timeline.knightlab.com/docs/options.html) (for more technical users)
-* [JSON configuration file format](https://timeline.knightlab.com/docs/json-format.html) for those who prefer not to use Google Sheets
+```js
+import { Timeline } from 'timelinejs-react-skins';
+import 'timelinejs-react-skins/dist/css/timeline.css';
 
-## Contributing to TimelineJS
-Are you trying to contribute to or develop TimelineJS3? [Here's where you should start.](https://github.com/NUKnightLab/TimelineJS3/blob/master/CONTRIBUTING.md)
+new Timeline('timeline-embed', dataSource, options);
+```
+
+### Programmatic — React skins
+
+```js
+import { TimelineReact } from 'timelinejs-react-skins';
+// CSS not needed; skins are self-contained.
+
+new TimelineReact('timeline-embed', dataSource, {
+  theme: 'archive',       // 'archive' | 'cinematic' | 'editorial'
+  language: 'en',         // 'fr' (default) | 'en'
+  standalone: true,       // optional: URL hash routing + theme persistence (archive only)
+  initialIdx: 0,
+});
+```
+
+`dataSource` accepts the same inputs as `Timeline`: a Google Sheets URL, a JSON URL, an inline config object, or a `TimelineConfig` instance.
+
+## Demo
+
+A picker covering all 3 directions × 2 languages is shipped in the repo:
+
+```bash
+npm install
+npm run build
+npx http-server -p 8765
+# Open http://localhost:8765/examples/react-skins.html?theme=archive&lang=en
+```
+
+## Project layout (fork additions)
+
+```
+src/js/
+├── react/
+│   ├── DirectionArchive.jsx       # 'archive' skin
+│   ├── DirectionCinematic.jsx     # 'cinematic' skin
+│   ├── DirectionEditorial.jsx     # 'editorial' skin
+│   ├── SmartImage.jsx             # image component with Wikipedia fallback
+│   ├── hooks.js                   # useSlideLayers, useContainerWidth, year range helpers
+│   ├── labels.js                  # FR/EN i18n dicts
+│   └── adapters/
+│       └── timelineConfigToEvents.js   # TimelineConfig → React skin format
+├── timeline/
+│   ├── Timeline.js                # unchanged upstream
+│   └── TimelineReact.jsx          # new — React mount wrapper
+├── index.js                       # vanilla entry (timeline.js)
+└── index.react.js                 # React entry (timeline.react.js)
+```
+
+## Commands
+
+```bash
+npm install
+npm test           # 138 tests (10 suites), including loadConfig + adapter
+npm run build      # both bundles + LESS themes
+npm start          # webpack dev server (vanilla)
+npm run dist       # clean + build
+```
+
+## Development notes
+
+- Node ≥ 22 recommended (project's `.nvmrc` pins a specific version).
+- New JSX files go through `babel-loader` + `@babel/preset-react` (automatic runtime). `.js` files are not transpiled, exactly as upstream.
+- React 18 is bundled into `timeline.react.js`; its MIT notice is emitted to `dist/js/timeline.react.js.LICENSE.txt` by terser. See [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md).
+
+## Compatibility with upstream
+
+| Surface | Status |
+|---|---|
+| `new Timeline(elem, data, options)` | Unchanged. Same imports, same options, same iframe behaviour. |
+| `dist/js/timeline.js` / `dist/css/timeline.css` | Bit-compatible with upstream output (modulo bundler version drift). |
+| Embed URL without `?theme=` | Identical to upstream. |
+| Embed URL with `?theme=archive\|cinematic\|editorial` | New — loads the React bundle. |
+| Google Sheets / CSV / JSON data pipeline | Unchanged. |
+| Custom `MediaType` regexes | Unchanged. |
+| Vanilla locale files (`src/js/language/locale/*.json`) | Unchanged. React skin labels live in `src/js/react/labels.js`. |
 
 ## API
 
-For users who instantiate a timeline in a page (as opposed to using the iframe embed model), [this page](https://github.com/NUKnightLab/TimelineJS3/blob/master/API.md) roughly documents TimelineJS's JavaScript API, but note that because TimelineJS's primary use case is the embedded iframe, some of these methods have not been thoroughly tested.
+The vanilla `Timeline` API is documented upstream: https://github.com/NUKnightLab/TimelineJS3/blob/master/API.md
+The `TimelineReact` class accepts the same first two arguments and the following `options`:
 
-## Use via ES6 modules/webpack
+- `theme` — required for React rendering. One of `'archive'`, `'cinematic'`, `'editorial'`.
+- `language` / `lang` — language code. `/^en/i` → EN dict, else FR. Date formatting uses upstream `Language` loader.
+- `script_path` — passed to `loadLanguage` for locale fetching.
+- `standalone` — boolean. Archive direction uses URL hash routing and persists theme to `localStorage`.
+- `initialIdx` — starting event index (default `0`).
+- `defaultTheme` — for Archive: `'sepia'` (default) | `'light'` | `'dark'`.
+- `labels` — full dict override (advanced; bypasses language detection).
 
-To use in a project that uses ES6 modules and webpack, import the `Timeline` class and the CSS as follows
+## Contributing
 
-```js
-import { Timeline } from '@knight-lab/timelinejs';
-import '@knight-lab/timelinejs/dist/css/timeline.css';
-```
+Issues and PRs welcome on this fork's repository. Upstream contributing guide is at https://github.com/NUKnightLab/TimelineJS3/blob/master/CONTRIBUTING.md and remains relevant for changes to the vanilla data pipeline.
+
+## Credits
+
+This fork builds on the work of the Northwestern University Knight Lab. Original contributors (Zach Wise, Joe Germuska) and the broader Knight Lab team retain credit for the underlying engine. See [NOTICE](NOTICE) for the attribution required by MPL-2.0 §3.3.

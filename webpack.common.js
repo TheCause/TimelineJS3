@@ -4,12 +4,15 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const output_path = path.resolve(__dirname, "dist");
 module.exports = {
-    entry: "./src/js/index.js",
+    entry: {
+        timeline: "./src/js/index.js",
+        "timeline.react": "./src/js/index.react.js",
+    },
     optimization: {
         usedExports: true
     },
     output: {
-        filename: "timeline.js",
+        filename: "[name].js",
         path: path.join(output_path, 'js'),
         library: "TL" // https://webpack.js.org/configuration/output/#outputlibrary
     },
@@ -29,8 +32,18 @@ module.exports = {
             cleanStaleWebpackAssets: true
         }),
     ],
+    resolve: {
+        extensions: ['.js', '.jsx'],
+    },
     module: {
         rules: [{
+                test: /\.jsx$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                },
+            },
+            {
                 test: /\.less$/,
                 use: [{
                         loader: 'css-loader',

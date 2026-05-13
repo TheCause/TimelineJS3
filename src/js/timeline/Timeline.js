@@ -5,7 +5,7 @@ import Message from "../ui/Message"
 import { Language, fallback, loadLanguage } from "../language/Language"
 import { I18NMixins } from "../language/I18NMixins";
 import Events from "../core/Events";
-import { makeConfig, jsonFromGoogleURL } from "../core/ConfigFactory"
+import { loadConfig, jsonFromGoogleURL } from "../core/ConfigFactory"
 import { TimelineConfig } from "../core/TimelineConfig"
 import { TimeNav } from "../timenav/TimeNav"
 import * as Browser from "../core/Browser"
@@ -269,18 +269,8 @@ class Timeline {
      * @param {string|TimelineConfig|object} data
      */
     _initData(data) {
-        if (typeof data == 'string') {
-            makeConfig(data, {
-                callback: function(config) {
-                    this.setConfig(config);
-                }.bind(this),
-                sheets_proxy: this.options.sheets_proxy
-            });
-        } else if (TimelineConfig == data.constructor) {
-            this.setConfig(data);
-        } else {
-            this.setConfig(new TimelineConfig(data));
-        }
+        loadConfig(data, { sheets_proxy: this.options.sheets_proxy })
+            .then((config) => this.setConfig(config));
     }
 
     /**

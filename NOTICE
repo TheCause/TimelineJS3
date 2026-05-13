@@ -1,0 +1,24 @@
+timelinejs-react-skins
+======================
+
+This project is a fork of TimelineJS3 by Northwestern University Knight Lab,
+originally licensed under the Mozilla Public License 2.0:
+
+    https://github.com/NUKnightLab/TimelineJS3
+
+The fork retains the MPL-2.0 license (see LICENSE) and adds three React-based
+rendering "skins" (Archive, Cinematic, Editorial) layered on top of the
+existing data pipeline (Google Sheets / CSV / JSON loading, TimelineConfig,
+MediaType detection, i18n).
+
+Original copyright and contributors are preserved per MPL-2.0 §3.3:
+
+    Copyright © Northwestern University Knight Lab
+    Contributors:
+        - Zach Wise <wise@northwestern.edu>
+        - Joe Germuska <joegermuska@northwestern.edu>
+
+Fork additions copyright © 2026 Régis Rigaud, licensed under the same MPL-2.0.
+
+Third-party runtime dependencies bundled with this project are documented in
+THIRD_PARTY_LICENSES.md.

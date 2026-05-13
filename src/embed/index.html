@@ -19,7 +19,8 @@
       this isn't good enough. We used that to get the non-minimized version, for debugging,
       but now maybe sourcemaps are a better alternative?
     -->
-    <script id='timeline-script-tag' type="text/javascript" src="../js/timeline.js"></script>
+    <!-- The bundle is loaded dynamically at the bottom of the body, picked
+         from timeline.js / timeline.react.js based on the ?theme= param. -->
     <link rel="stylesheet" href="../css/timeline.css">
     <!-- Google Analytics should be handled by Timeline -->
 
@@ -148,6 +149,18 @@
             return url_vars;
         };
 
+        // Pick the bundle based on ?theme=. Vanilla otherwise.
+        function loadTimelineBundle(useReact) {
+            return new Promise(function (resolve, reject) {
+                var s = document.createElement('script');
+                s.id = 'timeline-script-tag';
+                s.src = useReact ? '../js/timeline.react.js' : '../js/timeline.js';
+                s.onload = function () { resolve(); };
+                s.onerror = function () { reject(new Error('Failed to load ' + s.src)); };
+                document.head.appendChild(s);
+            });
+        }
+
         ready(function() {
             setPageLanguage();
             var embed_path = computeEmbedPath();
@@ -155,17 +168,20 @@
 
             var options = optionsFromUrlParams();
             createEmbedDiv('timeline-embed', options.width, options.height);
-            // ga_property_id is not something we let users override
             options.ga_measurement_id = 'G-LVEFKMG087'
             if (typeof(options.source) == 'undefined') {
                 options.source = '1xuY4upIooEeszZ_lCmeNx24eSFWe0rHe9ZdqH2xqVNk' // women in computing
             }
-
             options.soundcite = true;
+            window.options = options;
 
-            window.options = options
-            window.timeline = new TL.Timeline('timeline-embed', options.source, options)
-
+            loadTimelineBundle(!!options.theme).then(function () {
+                if (options.theme && TL.TimelineReact) {
+                    window.timeline = new TL.TimelineReact('timeline-embed', options.source, options);
+                } else {
+                    window.timeline = new TL.Timeline('timeline-embed', options.source, options);
+                }
+            });
         })
     </script>
 </body>

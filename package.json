@@ -1,18 +1,22 @@
 {
-    "name": "@knight-lab/timelinejs",
-    "version": "3.9.11",
+    "name": "timelinejs-react-skins",
+    "version": "0.1.0",
     "license": "MPL-2.0",
-    "description": "TimelineJS v3: A Storytelling Timeline built in JavaScript, made by Northwestern University Knight Lab.",
+    "description": "Fork of TimelineJS3 (Knight Lab) adding three React-based rendering skins (Archive / Cinematic / Editorial) on top of the existing data pipeline.",
     "dependencies": {
         "dompurify": "^3.1.7",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
         "wicg-inert": "^3.1.2"
     },
     "devDependencies": {
         "@babel/cli": "^7.28.6",
         "@babel/core": "^7.29.0",
         "@babel/preset-env": "^7.29.0",
+        "@babel/preset-react": "^7.28.5",
         "adm-zip": "^0.4.14",
         "babel-jest": "^29.7.0",
+        "babel-loader": "^9.2.1",
         "clean-webpack-plugin": "^4.0.0",
         "copy-webpack-plugin": "^14.0.0",
         "css-loader": "^7.1.2",
@@ -38,14 +42,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/NUKnightLab/TimelineJS3.git"
+        "url": ""
     },
-    "keywords": [],
-    "author": "Northwestern University Knight Lab",
+    "keywords": ["timeline", "react", "visualization", "fork"],
+    "author": "Régis Rigaud",
     "bugs": {
-        "url": "https://github.com/NUKnightLab/TimelineJS3/issues"
+        "url": ""
     },
-    "homepage": "https://timeline.knightlab.com",
+    "homepage": "",
     "scripts": {
         "test": "jest",
         "dist": "run-s clean build",
@@ -57,16 +61,17 @@
         "stage": "npm run dist && node tasks/stage.js",
         "stage_latest": "npm run dist && node tasks/stage.js latest",
         "stage_dev": "npm run dist && node tasks/stage.js dev",
+        "demo:archive": "webpack --config webpack.demo.js && http-server -o /examples/react-archive.html",
         "prepublishOnly": "npm run dist"
     },
     "contributors": [
         {
-            "name": "Zach Wise",
+            "name": "Zach Wise (upstream)",
             "email": "wise@northwestern.edu",
             "url": "https://github.com/zachwise"
         },
         {
-            "name": "Joe Germuska",
+            "name": "Joe Germuska (upstream)",
             "email": "joegermuska@northwestern.edu",
             "url": "https://github.com/JoeGermuska"
         }

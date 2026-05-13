@@ -1,4 +1,5 @@
-import { parseGoogleSpreadsheetURL, makeGoogleCSVURL } from "../ConfigFactory"
+import { parseGoogleSpreadsheetURL, makeGoogleCSVURL, loadConfig } from "../ConfigFactory"
+import { TimelineConfig } from "../TimelineConfig"
 
 test("Bare sheet ID should come back in key", () => {
     var key = '1cWqQBZCkX9GpzFtxCWHoqFXCHg-ylTVUWlnrdYMzKUI';
@@ -78,4 +79,32 @@ describe("test making CSV URL from various inputs", () => {
         makeGoogleCSVURL('1xuY4upIooEeszZ_lCmeNx24eSFWe0rHe9ZdqH2xqVNk')
     ).toMatch(/pub\?output=csv$/)
 
+})
+
+describe("loadConfig — promise facade over the data loader", () => {
+    const minimalJson = {
+        events: [{
+            start_date: { year: 2020 },
+            text: { headline: "Hello", text: "World" }
+        }]
+    }
+
+    test("resolves a plain JSON object into a TimelineConfig", async () => {
+        const config = await loadConfig(minimalJson)
+        expect(config).toBeInstanceOf(TimelineConfig)
+        expect(config.events.length).toBe(1)
+        expect(config.events[0].text.headline).toBe("Hello")
+    })
+
+    test("returns the same instance when given a TimelineConfig", async () => {
+        const original = new TimelineConfig(minimalJson)
+        const config = await loadConfig(original)
+        expect(config).toBe(original)
+    })
+
+    test("does not double-wrap a TimelineConfig", async () => {
+        const original = new TimelineConfig(minimalJson)
+        const config = await loadConfig(original)
+        expect(config.events.length).toBe(1)
+    })
 })

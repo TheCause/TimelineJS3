@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>TimelineJS3 — 3 directions React</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Archivo:wght@400;700;800&display=swap" rel="stylesheet">
+
+<style>
+    html, body {
+        margin: 0; padding: 0; height: 100%; height: 100dvh;
+        background: #111;
+        font-family: "Inter Tight", system-ui, -apple-system, sans-serif;
+        overflow: hidden;
+    }
+    #timeline-embed { position: absolute; inset: 0; }
+    #picker {
+        position: fixed; top: 12px; left: 12px; z-index: 99999;
+        background: rgba(0,0,0,.7); color: #fff;
+        padding: 6px 10px; border-radius: 999px;
+        font-family: "JetBrains Mono", monospace; font-size: 11px;
+        letter-spacing: .12em; text-transform: uppercase;
+        display: flex; gap: 8px; align-items: center;
+    }
+    #picker a {
+        color: #fff; text-decoration: none; padding: 3px 8px;
+        border: 1px solid rgba(255,255,255,.3); border-radius: 999px;
+    }
+    #picker a.on { background: #fff; color: #111; border-color: #fff; }
+    #picker span.sep { width: 1px; height: 12px; background: rgba(255,255,255,.3); }
+</style>
+</head>
+<body>
+
+<div id="picker">
+    <span>theme</span>
+    <a href="?theme=archive" id="t-archive">archive</a>
+    <a href="?theme=cinematic" id="t-cinematic">cinematic</a>
+    <a href="?theme=editorial" id="t-editorial">editorial</a>
+    <span class="sep"></span>
+    <span>lang</span>
+    <a id="l-fr">fr</a>
+    <a id="l-en">en</a>
+</div>
+<div id="timeline-embed"></div>
+
+<script src="../dist/js/timeline.react.js?v=4"></script>
+<script>
+    const params = new URLSearchParams(location.search);
+    const theme = params.get('theme') || 'archive';
+    const lang = params.get('lang') || 'fr';
+    document.getElementById('t-' + theme)?.classList.add('on');
+    document.getElementById('l-' + lang)?.classList.add('on');
+    document.getElementById('l-fr').href = `?theme=${theme}&lang=fr`;
+    document.getElementById('l-en').href = `?theme=${theme}&lang=en`;
+
+    const RAW = {
+        timeline: {
+            headline: 'Elizabeth Taylor — 1932–2011',
+            type: 'default',
+            text: "Une chronologie des moments-clés de la vie d'Elizabeth Taylor.",
+            date: [
+                { startDate: '1932,2,27', headline: 'Naissance à Londres',
+                    text: 'Elizabeth Rosemond Taylor naît à Hampstead, Londres, de parents américains.',
+                    tags: 'Personal life', asset: { caption: 'Hampstead, Londres' } },
+                { startDate: '1944,1,1', headline: 'National Velvet',
+                    text: 'À 12 ans, Taylor crève l’écran dans <em>National Velvet</em>.',
+                    tags: 'Career', asset: { credit: 'MGM', caption: 'National Velvet, MGM' } },
+                { startDate: '1958,1,1', headline: 'Cat on a Hot Tin Roof',
+                    text: 'Nomination aux Oscars pour <em>La Chatte sur un toit brûlant</em>.',
+                    tags: 'Career', asset: { credit: 'MGM' } },
+                { startDate: '1963,6,12', headline: 'Cléopâtre',
+                    text: 'Le tournage le plus cher d’Hollywood. Elle rencontre Richard Burton.',
+                    tags: 'Career, Marriages', asset: { credit: '20th Century Fox', caption: 'Avec Richard Burton' } },
+                { startDate: '1985,1,1', endDate: '2011,3,23', headline: 'Activisme SIDA',
+                    text: 'Cofondatrice de l’AmFAR, elle consacre les dernières décennies à la lutte contre le sida.',
+                    tags: 'Personal life', asset: { caption: 'Avec Magic Johnson, 1997' } },
+                { startDate: '2011,3,23', headline: 'Décès à Los Angeles',
+                    text: 'Elle s’éteint d’insuffisance cardiaque à Cedars-Sinai.',
+                    tags: 'Personal life' },
+            ],
+            era: [
+                { startDate: '1932,1,1', endDate: '1949,12,31', headline: 'Enfance' },
+                { startDate: '1950,1,1', endDate: '1979,12,31', headline: 'Âge d’or' },
+                { startDate: '1980,1,1', endDate: '2011,3,23', headline: 'Engagements' },
+            ],
+        },
+    };
+
+    function v2ToInternal(raw) {
+        const T = raw.timeline || raw;
+        const parseDate = (s) => {
+            if (!s) return undefined;
+            const [y, m, d] = String(s).split(',').map(n => parseInt(n, 10));
+            return { year: y, month: m || 1, day: d || 1 };
+        };
+        return {
+            title: T.headline ? { text: { headline: T.headline, text: T.text || '' } } : undefined,
+            events: (T.date || []).map(ev => ({
+                start_date: parseDate(ev.startDate),
+                end_date: parseDate(ev.endDate),
+                text: { headline: ev.headline || '', text: ev.text || '', tags: ev.tags || '' },
+                group: ev.group,
+                media: ev.asset ? { url: ev.asset.media || '', caption: ev.asset.caption || '', credit: ev.asset.credit || '' } : undefined,
+            })),
+            eras: (T.era || []).map(e => ({
+                start_date: parseDate(e.startDate),
+                end_date: parseDate(e.endDate),
+                text: { headline: e.headline || '' },
+            })),
+        };
+    }
+
+    new TL.TimelineReact('timeline-embed', v2ToInternal(RAW), {
+        theme,
+        language: lang,
+        standalone: true,
+    });
+</script>
+</body>
+</html>

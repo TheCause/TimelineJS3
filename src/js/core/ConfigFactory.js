@@ -352,6 +352,39 @@ function finalizeConfig(json, callback) {
  * @param {String} url the URL or Google Spreadsheet key which can be used to get configuration information
  * @param {function|object} callback_or_options either a callback function or an object with a 'callback' property and other configuration properties
  */
+/**
+ * Promise-based facade over the data-loading pipeline. Accepts the same
+ * inputs as the `Timeline` constructor's `data` argument and resolves to
+ * a `TimelineConfig` — without instantiating any DOM rendering layer.
+ *
+ * Resolution rules:
+ *   - String input → treated as URL/Sheet key, dispatched via `makeConfig`.
+ *   - TimelineConfig instance → returned as-is.
+ *   - Plain object → wrapped in a new TimelineConfig.
+ *
+ * Even on network/parse failure the promise resolves (never rejects) with
+ * a TimelineConfig carrying logged errors, mirroring `makeConfig`'s
+ * contract so callers can render an error message instead of crashing.
+ *
+ * @param {string|TimelineConfig|object} source
+ * @param {object} [options] - forwarded to makeConfig (e.g. sheets_proxy)
+ * @returns {Promise<TimelineConfig>}
+ */
+export function loadConfig(source, options = {}) {
+    if (source && TimelineConfig === source.constructor) {
+        return Promise.resolve(source);
+    }
+    if (typeof source !== 'string') {
+        return Promise.resolve(new TimelineConfig(source));
+    }
+    return new Promise((resolve) => {
+        makeConfig(source, {
+            ...options,
+            callback: resolve,
+        });
+    });
+}
+
 export async function makeConfig(url, callback_or_options) {
 
     let callback = null,

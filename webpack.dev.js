@@ -30,7 +30,8 @@ module.exports = merge.smart({
     },
     plugins: [
         new HtmlWebpackPlugin({
-            template: 'src/template/index.html'
+            template: 'src/template/index.html',
+            chunks: ['timeline'],
         })
     ]
 }, common)

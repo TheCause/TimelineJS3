@@ -1,0 +1,106 @@
+// Translatable strings for the three React skins. Defaults to French; pass
+// `options.language: "en"` (or any "en*" locale) to TimelineReact for English.
+
+export const LABELS_FR = {
+    archive: {
+        title: 'Archive',
+        corpus: 'CORPUS',
+        entries: 'entrées',
+        themeLabel: 'thème',
+        densityLabel: 'densité',
+        fiche: 'fiche',
+        ref: 'réf.',
+        searchPlaceholder: 'rechercher  (/)',
+        reset: 'reset',
+        indexHeading: 'Index chronologique',
+        noResultsBefore: 'Aucune entrée ne correspond. Affinez la recherche ou cliquez ',
+        noResultsAfter: '.',
+        fieldReference: 'Référence',
+        fieldDate: 'Date',
+        fieldCountry: 'Pays / agence',
+        fieldCategory: 'Catégorie',
+        fieldEra: 'Ère',
+        fieldCredit: 'Crédit',
+        captionLabel: 'Légende',
+        copyDone: '✓ lien copié',
+        copyLink: '↗ copier le lien',
+        navigation: 'Navigation',
+        shortcutsPrefix: 'raccourcis · ',
+        shortcutNav: ' nav · ',
+        shortcutSearch: ' rechercher',
+        sample: 'échantillon',
+        figureLabel: 'Fig.',
+        themes: { sepia: 'Sépia', light: 'Clair', dark: 'Sombre' },
+        mobileTabs: { fiche: 'Fiche', index: 'Index', meta: 'Détails' },
+    },
+    cinematic: {
+        jalonsSuffix: 'jalons',
+        minimalHint: 'mode minimal · M pour rétablir le chrome',
+        prev: 'Précédent (←)',
+        play: 'Lecture (Espace)',
+        pause: 'Pause (Espace)',
+        next: 'Suivant (→)',
+        minimal: 'Mode minimal (M)',
+        fullscreen: 'Plein écran (F)',
+        durationPrefix: 'Durée par slide : ',
+    },
+    editorial: {
+        prev: '← Précédent',
+        next: 'Suivant →',
+    },
+};
+
+export const LABELS_EN = {
+    archive: {
+        title: 'Archive',
+        corpus: 'CORPUS',
+        entries: 'entries',
+        themeLabel: 'theme',
+        densityLabel: 'density',
+        fiche: 'card',
+        ref: 'ref.',
+        searchPlaceholder: 'search  (/)',
+        reset: 'reset',
+        indexHeading: 'Chronological index',
+        noResultsBefore: 'No entry matches. Refine the search or click ',
+        noResultsAfter: '.',
+        fieldReference: 'Reference',
+        fieldDate: 'Date',
+        fieldCountry: 'Country / agency',
+        fieldCategory: 'Category',
+        fieldEra: 'Era',
+        fieldCredit: 'Credit',
+        captionLabel: 'Caption',
+        copyDone: '✓ link copied',
+        copyLink: '↗ copy link',
+        navigation: 'Navigation',
+        shortcutsPrefix: 'shortcuts · ',
+        shortcutNav: ' nav · ',
+        shortcutSearch: ' search',
+        sample: 'sample',
+        figureLabel: 'Fig.',
+        themes: { sepia: 'Sepia', light: 'Light', dark: 'Dark' },
+        mobileTabs: { fiche: 'Card', index: 'Index', meta: 'Details' },
+    },
+    cinematic: {
+        jalonsSuffix: 'events',
+        minimalHint: 'minimal mode · M to restore chrome',
+        prev: 'Previous (←)',
+        play: 'Play (Space)',
+        pause: 'Pause (Space)',
+        next: 'Next (→)',
+        minimal: 'Minimal mode (M)',
+        fullscreen: 'Fullscreen (F)',
+        durationPrefix: 'Slide duration: ',
+    },
+    editorial: {
+        prev: '← Previous',
+        next: 'Next →',
+    },
+};
+
+/** Pick a label dict based on a language code. Defaults to French. */
+export function pickLabels(code) {
+    if (code && /^en/i.test(code)) return LABELS_EN;
+    return LABELS_FR;
+}
