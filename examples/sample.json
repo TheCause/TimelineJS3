@@ -1,0 +1,262 @@
+{
+  "scale": "human",
+
+  "title": {
+    "text": {
+      "headline": "Hors-sol",
+      "text": "Soixante-sept ans d'exploration spatiale, 1957–2024."
+    }
+  },
+
+  "events": [
+    {
+      "unique_id": "sputnik-1",
+      "start_date": { "year": "1957", "month": "10", "day": "4" },
+      "text": {
+        "headline": "Spoutnik 1",
+        "text": "L'URSS place en orbite basse une sphère d'aluminium de 83 kg. Pendant trois semaines, son signal radio rend la guerre froide audible dans toutes les radios du monde.",
+        "tags": "Premier, URSS, orbite"
+      },
+      "media": {
+        "url": "https://en.wikipedia.org/wiki/Sputnik_1",
+        "credit": "NSSDC, NASA / Domaine public",
+        "caption": "Maquette du satellite Spoutnik 1, RKK Energuiya."
+      },
+      "group": "URSS"
+    },
+
+    {
+      "unique_id": "gagarin",
+      "start_date": { "year": "1961", "month": "4", "day": "12" },
+      "text": {
+        "headline": "Youri Gagarine en orbite",
+        "text": "À bord de Vostok 1, Gagarine devient le premier humain à voir la Terre comme une sphère. La capsule rentre par parachute ; le pilote, lui, s'éjecte à 7 km d'altitude.",
+        "tags": "Premier humain, URSS"
+      },
+      "media": {
+        "url": "https://en.wikipedia.org/wiki/Yuri_Gagarin",
+        "credit": "Archives soviétiques / Domaine public",
+        "caption": "Yuri Gagarine avant le décollage de Baïkonour."
+      },
+      "group": "URSS"
+    },
+
+    {
+      "unique_id": "apollo-11",
+      "start_date": { "year": "1969", "month": "7", "day": "20" },
+      "end_date":   { "year": "1969", "month": "7", "day": "24" },
+      "text": {
+        "headline": "Apollo 11 — Mer de la Tranquillité",
+        "subheadline": "« Un petit pas pour l'homme… »",
+        "text": "Armstrong et Aldrin posent le module lunaire <em>Eagle</em>. Six cent millions de téléspectateurs regardent en direct ce qui restera, pour soixante ans, le plus loin qu'un humain ait marché.",
+        "tags": "Lune, NASA, USA"
+      },
+      "media": {
+        "url": "https://en.wikipedia.org/wiki/Apollo_11",
+        "credit": "Neil Armstrong, NASA · AS11-40-5903",
+        "caption": "Buzz Aldrin photographié par Armstrong, NASA AS11-40-5903."
+      },
+      "group": "USA"
+    },
+
+    {
+      "unique_id": "voyager-1",
+      "start_date": { "year": "1977", "month": "9", "day": "5" },
+      "text": {
+        "headline": "Lancement de Voyager 1",
+        "text": "La sonde la plus rapide jamais lancée vers l'extérieur du Système solaire emporte le <em>Golden Record</em>, message en bouteille à destination d'éventuelles civilisations extraterrestres.",
+        "tags": "Sonde, NASA, message"
+      },
+      "media": {
+        "url": "https://www.youtube.com/watch?v=ko30k0lyJUk",
+        "credit": "NASA",
+        "caption": "Lancement de Voyager 1, Cap Canaveral."
+      },
+      "group": "USA"
+    },
+
+    {
+      "unique_id": "shuttle-columbia",
+      "start_date": { "year": "1981", "month": "4", "day": "12" },
+      "text": {
+        "headline": "Premier vol de la navette Columbia",
+        "text": "Vingt ans jour pour jour après Gagarine, la NASA inaugure le premier véhicule spatial réutilisable.",
+        "tags": "Navette, NASA, USA"
+      },
+      "media": {
+        "url": "https://en.wikipedia.org/wiki/Space_Shuttle_Columbia",
+        "credit": "NASA",
+        "caption": "STS-1, Columbia au décollage."
+      },
+      "group": "USA"
+    },
+
+    {
+      "unique_id": "mir",
+      "start_date": { "year": "1986", "month": "2", "day": "20" },
+      "end_date":   { "year": "2001", "month": "3", "day": "23" },
+      "text": {
+        "headline": "Station Mir",
+        "text": "Premier avant-poste habité en permanence, occupé pendant quinze ans avant sa désorbitation contrôlée au-dessus du Pacifique.",
+        "tags": "Station, URSS, Russie"
+      },
+      "media": {
+        "url": "https://en.wikipedia.org/wiki/Mir",
+        "credit": "Roscosmos",
+        "caption": "Mir vue depuis Atlantis, STS-71, 1995."
+      },
+      "group": "URSS / Russie"
+    },
+
+    {
+      "unique_id": "hubble",
+      "start_date": { "year": "1990", "month": "4", "day": "24" },
+      "text": {
+        "headline": "Télescope Hubble en orbite",
+        "text": "Le miroir mal taillé est corrigé en orbite par une mission de service en 1993. Hubble redéfinit la cosmologie observationnelle.",
+        "tags": "Observatoire, NASA, ESA"
+      },
+      "media": {
+        "url": "https://en.wikipedia.org/wiki/Hubble_Space_Telescope",
+        "credit": "NASA / ESA",
+        "caption": "Champ profond de Hubble, Ultra Deep Field."
+      },
+      "group": "USA / ESA"
+    },
+
+    {
+      "unique_id": "iss",
+      "start_date": { "year": "1998", "month": "11", "day": "20" },
+      "text": {
+        "headline": "Premier module de l'ISS",
+        "text": "Le module russe <em>Zarya</em> ouvre la coopération internationale qui occupera l'orbite basse pendant plus de 25 ans.",
+        "tags": "Station, international"
+      },
+      "media": {
+        "url": "https://en.wikipedia.org/wiki/International_Space_Station",
+        "credit": "NASA",
+        "caption": "L'ISS vue depuis la navette Endeavour, STS-134."
+      },
+      "group": "International"
+    },
+
+    {
+      "unique_id": "mars-rovers",
+      "start_date": { "year": "2004", "month": "1", "day": "4" },
+      "text": {
+        "headline": "Rovers Spirit et Opportunity",
+        "text": "Conçus pour 90 jours, ils explorent Mars pendant 6 ans (Spirit) et 14 ans (Opportunity).",
+        "tags": "Mars, NASA, rover"
+      },
+      "media": {
+        "url": "https://en.wikipedia.org/wiki/Mars_Exploration_Rover",
+        "credit": "NASA / JPL-Caltech",
+        "caption": "Autoportrait d'Opportunity à Endeavour Crater."
+      },
+      "group": "USA"
+    },
+
+    {
+      "unique_id": "new-horizons-pluto",
+      "start_date": { "year": "2015", "month": "7", "day": "14" },
+      "text": {
+        "headline": "Survol de Pluton par New Horizons",
+        "text": "Neuf ans et demi après son lancement, la sonde révèle pour la première fois Pluton et Charon en haute résolution.",
+        "tags": "Pluton, NASA, sonde"
+      },
+      "media": {
+        "url": "https://en.wikipedia.org/wiki/New_Horizons",
+        "credit": "NASA / JHU-APL / SwRI",
+        "caption": "Pluton, image composite du 14 juillet 2015."
+      },
+      "group": "USA"
+    },
+
+    {
+      "unique_id": "falcon-9-landing",
+      "start_date": { "year": "2015", "month": "12", "day": "21" },
+      "text": {
+        "headline": "Atterrissage du Falcon 9",
+        "text": "SpaceX réussit le premier retour vertical d'un étage orbital. La réutilisation devient le nouveau standard économique.",
+        "tags": "SpaceX, réutilisation, lanceur"
+      },
+      "media": {
+        "url": "https://www.youtube.com/watch?v=ANv5UfZsvZQ",
+        "credit": "SpaceX",
+        "caption": "Falcon 9 ORBCOMM-2, retour à Cap Canaveral."
+      },
+      "group": "USA (privé)"
+    },
+
+    {
+      "unique_id": "tiangong",
+      "start_date": { "year": "2021", "month": "4", "day": "29" },
+      "text": {
+        "headline": "Station Tiangong",
+        "text": "La Chine lance le module central de sa station permanente, assemblée en orbite en 18 mois.",
+        "tags": "Station, Chine"
+      },
+      "media": {
+        "url": "https://en.wikipedia.org/wiki/Tiangong_space_station",
+        "credit": "CMSA / Xinhua",
+        "caption": "Module Tianhe, lancement Long March 5B."
+      },
+      "group": "Chine"
+    },
+
+    {
+      "unique_id": "jwst",
+      "start_date": { "year": "2021", "month": "12", "day": "25" },
+      "text": {
+        "headline": "Lancement du James Webb Space Telescope",
+        "text": "Trente ans de développement, dix milliards de dollars, un déploiement orbital en 178 étapes critiques. Premières images en juillet 2022.",
+        "tags": "Observatoire, NASA, ESA, CSA"
+      },
+      "media": {
+        "url": "https://en.wikipedia.org/wiki/James_Webb_Space_Telescope",
+        "credit": "NASA / ESA / CSA / STScI",
+        "caption": "Premier champ profond de Webb, SMACS 0723."
+      },
+      "group": "International"
+    },
+
+    {
+      "unique_id": "starship-ift5",
+      "start_date": { "year": "2024", "month": "10", "day": "13" },
+      "text": {
+        "headline": "Récupération du booster Super Heavy",
+        "text": "SpaceX rattrape le premier étage géant <em>Super Heavy</em> entre les bras de la tour de lancement, en plein vol. Étape clé vers la réutilisation rapide d'un lanceur lourd.",
+        "tags": "SpaceX, réutilisation, Starship"
+      },
+      "media": {
+        "url": "https://www.youtube.com/watch?v=hJDfPlVnZIA",
+        "credit": "SpaceX",
+        "caption": "IFT-5, Boca Chica, 13 octobre 2024."
+      },
+      "group": "USA (privé)"
+    }
+  ],
+
+  "eras": [
+    {
+      "start_date": { "year": "1957", "month": "1", "day": "1" },
+      "end_date":   { "year": "1975", "month": "12", "day": "31" },
+      "text": { "headline": "Course aux étoiles" }
+    },
+    {
+      "start_date": { "year": "1981", "month": "1", "day": "1" },
+      "end_date":   { "year": "2011", "month": "12", "day": "31" },
+      "text": { "headline": "Navette & stations" }
+    },
+    {
+      "start_date": { "year": "1990", "month": "1", "day": "1" },
+      "end_date":   { "year": "2016", "month": "12", "day": "31" },
+      "text": { "headline": "Robotique planétaire" }
+    },
+    {
+      "start_date": { "year": "2015", "month": "1", "day": "1" },
+      "end_date":   { "year": "2025", "month": "12", "day": "31" },
+      "text": { "headline": "Nouvelle ère" }
+    }
+  ]
+}
