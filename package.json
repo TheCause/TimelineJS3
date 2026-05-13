@@ -1,5 +1,5 @@
 {
-    "name": "timelinejs-react-skins",
+    "name": "@thecause/timelinejs",
     "version": "0.1.0",
     "license": "MPL-2.0",
     "description": "Fork of TimelineJS3 (Knight Lab) adding three React-based rendering skins (Archive / Cinematic / Editorial) on top of the existing data pipeline.",

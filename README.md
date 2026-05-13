@@ -1,5 +1,5 @@
-timelinejs-react-skins
-======================
+@thecause/timelinejs
+====================
 
 A fork of **TimelineJS3** (Northwestern University Knight Lab) that layers three
 React-based rendering "skins" on top of the existing data pipeline.
@@ -32,8 +32,8 @@ The embed page accepts a `?theme=` query param. Without it, the vanilla bundle i
 ### Programmatic — vanilla (unchanged)
 
 ```js
-import { Timeline } from 'timelinejs-react-skins';
-import 'timelinejs-react-skins/dist/css/timeline.css';
+import { Timeline } from '@thecause/timelinejs';
+import '@thecause/timelinejs/dist/css/timeline.css';
 
 new Timeline('timeline-embed', dataSource, options);
 ```
@@ -41,7 +41,7 @@ new Timeline('timeline-embed', dataSource, options);
 ### Programmatic — React skins
 
 ```js
-import { TimelineReact } from 'timelinejs-react-skins';
+import { TimelineReact } from '@thecause/timelinejs';
 // CSS not needed; skins are self-contained.
 
 new TimelineReact('timeline-embed', dataSource, {
