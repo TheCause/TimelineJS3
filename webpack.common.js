@@ -40,6 +40,13 @@ module.exports = {
                 {
                     from: './examples/sample.json',
                     to: path.join(output_path, "examples/sample.json")
+                },
+                {
+                    // Required by MPL-2.0 §3.3 — keep attribution alongside dist.
+                    // .txt variant has an explicit MIME so static servers
+                    // (some serve extension-less files via 30x redirect).
+                    from: './NOTICE',
+                    to: path.join(output_path, "NOTICE.txt")
                 }
             ]
         }),
