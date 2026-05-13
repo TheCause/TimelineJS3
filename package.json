@@ -62,6 +62,7 @@
         "stage_latest": "npm run dist && node tasks/stage.js latest",
         "stage_dev": "npm run dist && node tasks/stage.js dev",
         "demo:archive": "webpack --config webpack.demo.js && http-server -o /examples/react-archive.html",
+        "check:links": "tools/check-links.sh",
         "prepublishOnly": "npm run dist"
     },
     "contributors": [
