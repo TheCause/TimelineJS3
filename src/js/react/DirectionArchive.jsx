@@ -407,7 +407,7 @@ export function DirectionArchive({ data, standalone = false, initialIdx = 0, def
 function CHeader({ ctx }) {
     const { T, events, ev, idx, filteredCount, density, setDensity, theme, setTheme, isMobile, yearMin, yearMax, labels } = ctx;
     return (
-        <header style={{
+        <header className="tl-topbar" style={{
             flex: '0 0 auto',
             padding: isMobile ? '12px 16px' : '16px 28px',
             borderBottom: `1px solid ${T.border}`,

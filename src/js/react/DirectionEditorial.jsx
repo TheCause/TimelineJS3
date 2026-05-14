@@ -125,7 +125,7 @@ export function DirectionEditorial({ data, initialIdx = 0, labels: labelsProp })
                 display: 'flex', flexDirection: 'column',
                 overflow: 'hidden',
             }}>
-                <header style={{
+                <header className="tl-topbar" style={{
                     flex: '0 0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
                     padding: '24px 40px 20px',
                     borderBottom: '1px solid rgba(26,24,20,.12)',

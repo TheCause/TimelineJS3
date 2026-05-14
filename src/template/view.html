@@ -47,10 +47,58 @@
         #fatal-error.on { display: flex; }
         #fatal-error a { color: oklch(70% 0.16 198); }
         #fatal-error code { color: rgba(239,232,216,.6); }
+
+        /* Discreet "back to landing" logo, top-left overlay. */
+        .home-link {
+            position: fixed;
+            top: 12px; left: 12px;
+            z-index: 99999;
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 7px 12px 7px 10px;
+            background: rgba(10,10,12,.72);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 999px;
+            text-decoration: none;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(239,232,216,.78);
+            opacity: 0.7;
+            transition: opacity .18s, color .18s, border-color .18s, background .18s;
+        }
+        .home-link:hover, .home-link:focus-visible {
+            opacity: 1;
+            color: #efe8d8;
+            background: rgba(10,10,12,.9);
+            border-color: rgba(255,255,255,.28);
+        }
+        .home-mark { display: inline-flex; gap: 3px; align-items: center; }
+        .home-mark i {
+            width: 4px; height: 4px; border-radius: 50%; display: inline-block;
+        }
+        .home-mark i:nth-child(1) { background: oklch(70% 0.16 198); }
+        .home-mark i:nth-child(2) { background: #efe8d8; }
+        .home-mark i:nth-child(3) { background: oklch(72% 0.15 60); }
+        @media (max-width: 480px) {
+            .home-label { display: none; }
+            .home-link { padding: 8px; }
+        }
+        /* Reserve room for the home-link so skin top bars don't sit under it. */
+        #timeline-view .tl-topbar { padding-left: 132px !important; }
+        @media (max-width: 480px) {
+            #timeline-view .tl-topbar { padding-left: 52px !important; }
+        }
     </style>
 </head>
 
 <body>
+    <a class="home-link" href="./" aria-label="Retour à l'accueil" title="Retour à l'accueil">
+        <span class="home-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="home-label">accueil</span>
+    </a>
     <div id="timeline-view"></div>
     <div id="fatal-error" role="alert"></div>
 

@@ -213,7 +213,7 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp })
                     })}
                 </div>
 
-                <div style={{
+                <div className="tl-topbar" style={{
                     position: 'absolute', top: 24, left: 32, right: 32,
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     zIndex: 2,
