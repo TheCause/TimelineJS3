@@ -148,7 +148,17 @@ export function adaptTimelineConfig(config, options = {}) {
     const events = (config.events || []).map((ev, i) => {
         const parts = tldateParts(ev.start_date);
         const mediaUrl = ev.media && ev.media.url ? String(ev.media.url) : '';
-        const wiki = extractWikiTitle(mediaUrl);
+        const sources = normalizeSources(ev.sources);
+        let wiki = extractWikiTitle(mediaUrl);
+        const image = wiki ? null : (mediaUrl || null);
+        // Fallback illustration: an event with no media still gets a picture
+        // by deriving a Wikipedia image from its first Wikipedia source.
+        if (!wiki && !image) {
+            for (let s = 0; s < sources.length; s++) {
+                const w = extractWikiTitle(sources[s].url);
+                if (w) { wiki = w; break; }
+            }
+        }
         const tags = ev.text && ev.text.tags;
         const tagList = typeof tags === 'string'
             ? tags.split(',').map(t => t.trim()).filter(Boolean)
@@ -170,10 +180,10 @@ export function adaptTimelineConfig(config, options = {}) {
             text: stripHtml(ev.text && ev.text.text) || '',
             mediaKind: detectMediaKind(ev.media),
             mediaCaption: (ev.media && ev.media.caption) || '',
-            image: wiki ? null : (mediaUrl || null),
+            image,
             wiki,
             credit: (ev.media && ev.media.credit) || '',
-            sources: normalizeSources(ev.sources),
+            sources,
         };
     });
 

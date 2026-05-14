@@ -116,6 +116,41 @@ describe('adaptTimelineConfig', () => {
         expect(out.events[0].wiki).toBeNull();
     });
 
+    test('fallback: derives wiki image from a Wikipedia source when no media', () => {
+        const json = makeJSON();
+        json.events[0].media = undefined;
+        json.events[0].sources = [
+            { title: 'Britannica', url: 'https://www.britannica.com/place/x' },
+            { title: 'Wikipédia', url: 'https://fr.wikipedia.org/wiki/Spoutnik_1' },
+        ];
+        const config = new TimelineConfig(json);
+        const out = adaptTimelineConfig(config);
+        expect(out.events[0].wiki).toBe('Spoutnik_1');
+        expect(out.events[0].image).toBeNull();
+    });
+
+    test('fallback: no Wikipedia source leaves the event without an image', () => {
+        const json = makeJSON();
+        json.events[0].media = undefined;
+        json.events[0].sources = [
+            { title: 'Britannica', url: 'https://www.britannica.com/place/x' },
+        ];
+        const config = new TimelineConfig(json);
+        const out = adaptTimelineConfig(config);
+        expect(out.events[0].wiki).toBeNull();
+        expect(out.events[0].image).toBeNull();
+    });
+
+    test('fallback: media on the event still wins over Wikipedia sources', () => {
+        const json = makeJSON();
+        json.events[0].sources = [
+            { title: 'Wikipédia', url: 'https://fr.wikipedia.org/wiki/Autre_Page' },
+        ];
+        const config = new TimelineConfig(json);
+        const out = adaptTimelineConfig(config);
+        expect(out.events[0].wiki).toBe('Sputnik_1');
+    });
+
     test('handles BC date (negative year)', () => {
         const config = new TimelineConfig({
             events: [{
