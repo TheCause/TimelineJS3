@@ -332,6 +332,30 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp })
                         {ev.kicker && <em style={{ fontStyle: 'italic', opacity: .85 }}>{ev.kicker}.</em>}
                         {ev.kicker ? ' ' : ''}{ev.text}
                     </p>
+                    {ev.sources.length > 0 && (
+                        <div style={{
+                            marginTop: 14,
+                            display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '6px 14px',
+                            opacity: minimal ? 0 : 1,
+                            transition: 'opacity .4s ease',
+                            animation: 'b-text-rise 850ms cubic-bezier(.2,.7,.3,1) both 240ms',
+                        }}>
+                            <span style={{
+                                fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+                                letterSpacing: '.16em', textTransform: 'uppercase',
+                                color: 'rgba(240,238,233,.5)',
+                            }}>{labels.sources}</span>
+                            {ev.sources.map((s, i) => (
+                                <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                                    fontFamily: '"Inter Tight", system-ui, sans-serif',
+                                    fontSize: 12, lineHeight: 1.4,
+                                    color: 'rgba(240,238,233,.7)',
+                                    textDecoration: 'underline',
+                                    textDecorationColor: 'rgba(240,238,233,.3)',
+                                }}>{s.title}</a>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div style={{ position: 'absolute', left: 32, right: 32, bottom: 28, zIndex: 2 }}>

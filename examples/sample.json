@@ -22,6 +22,10 @@
         "credit": "NSSDC, NASA / Domaine public",
         "caption": "Maquette du satellite Spoutnik 1, RKK Energuiya."
       },
+      "sources": [
+        { "title": "NASA — Sputnik and the Dawn of the Space Age", "url": "https://history.nasa.gov/sputnik/" },
+        { "title": "Wikipedia — Sputnik 1", "url": "https://en.wikipedia.org/wiki/Sputnik_1" }
+      ],
       "group": "URSS"
     },
 
@@ -56,6 +60,10 @@
         "credit": "Neil Armstrong, NASA · AS11-40-5903",
         "caption": "Buzz Aldrin photographié par Armstrong, NASA AS11-40-5903."
       },
+      "sources": [
+        { "title": "NASA — Apollo 11 Mission Overview", "url": "https://www.nasa.gov/mission/apollo-11/" },
+        "https://en.wikipedia.org/wiki/Apollo_11"
+      ],
       "group": "USA"
     },
 

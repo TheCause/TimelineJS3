@@ -21,6 +21,7 @@ export const LABELS_FR = {
         fieldCategory: 'Catégorie',
         fieldEra: 'Ère',
         fieldCredit: 'Crédit',
+        fieldSources: 'Sources',
         captionLabel: 'Légende',
         copyDone: '✓ lien copié',
         copyLink: '↗ copier le lien',
@@ -43,10 +44,12 @@ export const LABELS_FR = {
         minimal: 'Mode minimal (M)',
         fullscreen: 'Plein écran (F)',
         durationPrefix: 'Durée par slide : ',
+        sources: 'Sources',
     },
     editorial: {
         prev: '← Précédent',
         next: 'Suivant →',
+        sources: 'Sources',
     },
 };
 
@@ -70,6 +73,7 @@ export const LABELS_EN = {
         fieldCategory: 'Category',
         fieldEra: 'Era',
         fieldCredit: 'Credit',
+        fieldSources: 'Sources',
         captionLabel: 'Caption',
         copyDone: '✓ link copied',
         copyLink: '↗ copy link',
@@ -92,10 +96,12 @@ export const LABELS_EN = {
         minimal: 'Minimal mode (M)',
         fullscreen: 'Fullscreen (F)',
         durationPrefix: 'Slide duration: ',
+        sources: 'Sources',
     },
     editorial: {
         prev: '← Previous',
         next: 'Next →',
+        sources: 'Sources',
     },
 };
 

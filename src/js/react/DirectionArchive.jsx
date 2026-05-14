@@ -799,6 +799,28 @@ function CMeta({ ctx }) {
                     </div>
                 )}
 
+                {ev.sources.length > 0 && (
+                    <div style={{ marginTop: 20, paddingTop: 16, borderTop: `1px solid ${T.border}` }}>
+                        <div style={{
+                            fontFamily: 'JetBrains Mono, monospace', fontSize: 9,
+                            letterSpacing: '.18em', textTransform: 'uppercase',
+                            color: T.inkSoft, marginBottom: 8,
+                        }}>{labels.fieldSources}</div>
+                        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                            {ev.sources.map((s, i) => (
+                                <li key={i} style={{ marginBottom: 6 }}>
+                                    <a href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                                        fontFamily: '"Inter Tight", system-ui, sans-serif',
+                                        fontSize: 12, lineHeight: 1.4,
+                                        color: T.ink, textDecoration: 'underline',
+                                        textDecorationColor: T.border, wordBreak: 'break-word',
+                                    }}>{s.title}</a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
                 <div style={{ marginTop: 16 }}>
                     <button onClick={copyLink} style={{
                         width: '100%',

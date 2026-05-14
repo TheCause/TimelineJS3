@@ -39,6 +39,23 @@ function stripHtml(html) {
         .trim();
 }
 
+function normalizeSources(raw) {
+    if (!Array.isArray(raw)) return [];
+    return raw
+        .map(s => {
+            if (typeof s === 'string') {
+                const url = s.trim();
+                return url ? { title: url, url } : null;
+            }
+            if (s && s.url) {
+                const url = String(s.url);
+                return { title: stripHtml(s.title) || url, url };
+            }
+            return null;
+        })
+        .filter(Boolean);
+}
+
 function eraYears(era) {
     const start = era.start_date && typeof era.start_date.getFullYear === 'function'
         ? era.start_date.getFullYear()
@@ -156,6 +173,7 @@ export function adaptTimelineConfig(config, options = {}) {
             image: wiki ? null : (mediaUrl || null),
             wiki,
             credit: (ev.media && ev.media.credit) || '',
+            sources: normalizeSources(ev.sources),
         };
     });
 

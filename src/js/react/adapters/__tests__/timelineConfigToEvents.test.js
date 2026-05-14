@@ -144,6 +144,46 @@ describe('adaptTimelineConfig', () => {
         expect(e.text).toBe('');
         expect(e.credit).toBe('');
         expect(e.era).toBeNull();
+        expect(e.sources).toEqual([]);
+    });
+
+    test('sources: maps {title,url} objects and strips HTML in title', () => {
+        const json = makeJSON();
+        json.events[0].sources = [
+            { title: 'Wikipédia — <em>Spoutnik</em>', url: 'https://en.wikipedia.org/wiki/Sputnik_1' },
+            { title: 'NASA history', url: 'https://history.nasa.gov/sputnik' },
+        ];
+        const config = new TimelineConfig(json);
+        const out = adaptTimelineConfig(config);
+        expect(out.events[0].sources).toEqual([
+            { title: 'Wikipédia — Spoutnik', url: 'https://en.wikipedia.org/wiki/Sputnik_1' },
+            { title: 'NASA history', url: 'https://history.nasa.gov/sputnik' },
+        ]);
+    });
+
+    test('sources: accepts bare string URLs and uses URL as title', () => {
+        const json = makeJSON();
+        json.events[0].sources = ['https://example.org/a', '  https://example.org/b  '];
+        const config = new TimelineConfig(json);
+        const out = adaptTimelineConfig(config);
+        expect(out.events[0].sources).toEqual([
+            { title: 'https://example.org/a', url: 'https://example.org/a' },
+            { title: 'https://example.org/b', url: 'https://example.org/b' },
+        ]);
+    });
+
+    test('sources: drops entries without a url and non-array values', () => {
+        const json = makeJSON();
+        json.events[0].sources = [{ title: 'no url' }, '', { url: 'https://ok.org' }];
+        const config = new TimelineConfig(json);
+        expect(adaptTimelineConfig(config).events[0].sources).toEqual([
+            { title: 'https://ok.org', url: 'https://ok.org' },
+        ]);
+
+        const json2 = makeJSON();
+        json2.events[0].sources = 'not-an-array';
+        const config2 = new TimelineConfig(json2);
+        expect(adaptTimelineConfig(config2).events[0].sources).toEqual([]);
     });
 
     test('uses provided language for display date formatting', () => {

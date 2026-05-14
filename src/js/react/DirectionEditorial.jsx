@@ -231,6 +231,32 @@ export function DirectionEditorial({ data, initialIdx = 0, labels: labelsProp })
                                         animation: isTop && dir !== 0 ? 'a-text-in 750ms cubic-bezier(.2,.7,.3,1) both 260ms' : 'none',
                                     }}>{lev.text}</p>
 
+                                    {lev.sources.length > 0 && (
+                                        <div style={{
+                                            marginTop: 20,
+                                            animation: isTop && dir !== 0 ? 'a-text-in 750ms cubic-bezier(.2,.7,.3,1) both 320ms' : 'none',
+                                        }}>
+                                            <div style={{
+                                                fontFamily: 'JetBrains Mono, monospace', fontSize: 10,
+                                                letterSpacing: '.1em', textTransform: 'uppercase',
+                                                color: 'rgba(26,24,20,.5)', marginBottom: 6,
+                                            }}>{labels.sources}</div>
+                                            <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                                                {lev.sources.map((s, si) => (
+                                                    <li key={si} style={{ marginBottom: 4 }}>
+                                                        <a href={s.url} target="_blank" rel="noopener noreferrer" style={{
+                                                            fontFamily: 'Newsreader, Georgia, serif',
+                                                            fontSize: 14, lineHeight: 1.45,
+                                                            color: 'rgba(26,24,20,.7)',
+                                                            textDecoration: 'underline',
+                                                            textDecorationColor: 'rgba(26,24,20,.25)',
+                                                        }}>{s.title}</a>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
                                     <div style={{ flex: '1 1 auto' }} />
                                     <div style={{
                                         display: 'flex', justifyContent: 'space-between', alignItems: 'center',

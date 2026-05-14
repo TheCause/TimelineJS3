@@ -942,6 +942,7 @@ footer {
         <li><span><code>events: [...]</code> requis, au moins 1.</span></li>
         <li><span>Chaque event : <code>start_date.year</code> et <code>text.headline</code> obligatoires.</span></li>
         <li><span><code>media.url</code> optionnel (Wikipedia, YouTube, Vimeo, image directe…).</span></li>
+        <li><span><code>sources: [...]</code> optionnel — citez vos sources, par URL ou <code>{title, url}</code>.</span></li>
         <li><span><code>eras: [...]</code> optionnel pour découper en périodes.</span></li>
       </ul>
       <div class="links">
@@ -960,7 +961,10 @@ footer {
     <span class="p">},</span>
     <span class="k">"media"</span><span class="p">:</span> <span class="p">{</span>
       <span class="k">"url"</span><span class="p">:</span> <span class="s">"https://en.wikipedia.org/wiki/Apollo_11"</span>
-    <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="k">"sources"</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span> <span class="k">"title"</span><span class="p">:</span> <span class="s">"NASA — Apollo 11"</span><span class="p">,</span> <span class="k">"url"</span><span class="p">:</span> <span class="s">"https://www.nasa.gov/mission/apollo-11/"</span> <span class="p">}</span>
+    <span class="p">]</span>
   <span class="p">}]</span>
 <span class="p">}</span></pre>
     </div>
