@@ -1,0 +1,11 @@
+# Copy this file to .deployrc (gitignored) and fill in your values.
+# tools/deploy.sh sources it to know where to rsync dist/.
+
+# SSH target: user@host
+REMOTE_HOST="user@host.example.com"
+
+# Default remote directory (overridable as the first arg to deploy.sh)
+REMOTE_DIR="~/your-site-dir/"
+
+# Local port used for the pre-deploy link audit (optional, defaults to 8765)
+# SERVE_PORT="8765"

@@ -65,6 +65,7 @@
         "serve": "npm run dist && http-server dist -p 8765 -c-1 -o",
         "serve:only": "http-server dist -p 8765 -c-1 -o",
         "check:links": "tools/check-links.sh http://localhost:8765",
+        "deploy": "tools/deploy.sh",
         "prepublishOnly": "npm run dist"
     },
     "contributors": [

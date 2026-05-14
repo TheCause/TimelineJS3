@@ -37,7 +37,12 @@ probe() {
     if [[ "$raw" =~ ^https?:// ]]; then
         url="$raw"
     elif [[ "$raw" =~ ^/ ]]; then
-        url="${BASE%/*}$raw"
+        # Root-relative: resolve against BASE's origin (scheme://host[:port]),
+        # whether or not BASE itself carries a path component.
+        local scheme="${BASE%%://*}"
+        local origin="${BASE#*://}"
+        origin="${origin%%/*}"
+        url="${scheme}://${origin}${raw}"
     else
         url="${BASE%/}/$raw"
     fi
