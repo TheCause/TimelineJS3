@@ -99,7 +99,11 @@ function extractWikiTitle(url) {
 
 function tldateParts(tldate) {
     if (!tldate) return { y: 1970, m: 1, d: 1 };
-    const data = tldate.data || {};
+    // Accept three shapes:
+    //  - TLDate instance: .getFullYear() / .data {year, month, day}
+    //  - TLDate-shaped object: { data: { year, month, day } }
+    //  - Plain JSON date object: { year, month?, day? }
+    const data = tldate.data || tldate;
     const y = typeof tldate.getFullYear === 'function'
         ? tldate.getFullYear()
         : (data.year != null ? Number(data.year) : 1970);
