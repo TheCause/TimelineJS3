@@ -75,12 +75,25 @@ function CinematicMedia({ kind, id, image, credit, wiki }) {
 
 /**
  * Cinematic direction — full-bleed media, ambient dark, Ken Burns + autoplay.
+ *
+ * Recording-friendly options (read from `options`):
+ *   - autoplay: boolean — start playing on mount.
+ *   - chrome: 'hidden' — hide all overlays (topbar, controls, track, era pills)
+ *     so only media + text + year readout remain. Useful for video capture.
+ *   - loop: boolean (default true) — if false, stop after the last event
+ *     instead of cycling back to the first.
+ *   - cinematicDuration: ms — initial slide duration (default 6000).
+ *
+ * Dispatches a `cinematic:end` CustomEvent (bubbles) on the root element
+ * when autoplay reaches the last event, with detail `{ looped }`.
  */
-export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp }) {
+export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp, options = {} }) {
     if (!data || !data.events || data.events.length === 0) return null;
     const labels = labelsProp || LABELS_FR.cinematic;
     const events = data.events;
     const safeInitial = Math.max(0, Math.min(initialIdx, events.length - 1));
+    const chromeHidden = options.chrome === 'hidden';
+    const loop = options.loop !== false;
     const [idx, setIdx] = useState(safeInitial);
     const ev = events[idx];
     const era = data.eras.find(e => e.id === ev.era) || { id: 'fallback', label: '—', hue: 0 };
@@ -120,9 +133,10 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp })
     const mediaLayers = useSlideLayers(idx, 900);
 
     const rootRef = useRef(null);
-    const [playing, setPlaying] = useState(false);
-    const [duration, setDuration] = useState(6000);
-    const [minimal, setMinimal] = useState(false);
+    const initialDuration = Number.isFinite(options.cinematicDuration) ? options.cinematicDuration : 6000;
+    const [playing, setPlaying] = useState(options.autoplay === true);
+    const [duration, setDuration] = useState(initialDuration);
+    const [minimal, setMinimal] = useState(chromeHidden);
     const [progress, setProgress] = useState(0);
     const [hovered, setHovered] = useState(false);
 
@@ -134,7 +148,19 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp })
         const tick = (now) => {
             const k = (now - start) / duration;
             if (k >= 1) {
-                setIdx(i => (i + 1) % events.length);
+                const isLast = idx >= events.length - 1;
+                if (isLast) {
+                    if (rootRef.current) {
+                        rootRef.current.dispatchEvent(new CustomEvent('cinematic:end', {
+                            bubbles: true,
+                            detail: { looped: loop, idx, total: events.length },
+                        }));
+                    }
+                    if (loop) setIdx(0);
+                    else setPlaying(false);
+                } else {
+                    setIdx(i => i + 1);
+                }
             } else {
                 setProgress(k);
                 raf = requestAnimationFrame(tick);
@@ -142,7 +168,7 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp })
         };
         raf = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(raf);
-    }, [playing, idx, duration, events.length]);
+    }, [playing, idx, duration, events.length, loop]);
 
     useEffect(() => {
         if (!hovered) return;
@@ -358,7 +384,7 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp })
                     )}
                 </div>
 
-                <div style={{ position: 'absolute', left: 32, right: 32, bottom: 28, zIndex: 2 }}>
+                {!chromeHidden && <div style={{ position: 'absolute', left: 32, right: 32, bottom: 28, zIndex: 2 }}>
                     <div style={{
                         position: 'relative', height: 32, marginBottom: 8,
                         display: 'flex', alignItems: 'flex-end', gap: 2,
@@ -427,9 +453,9 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp })
                         <span>{yearMin}</span>
                         <span>{yearMax}</span>
                     </div>
-                </div>
+                </div>}
 
-                <div style={{
+                {!chromeHidden && <div style={{
                     position: 'absolute', top: 0, left: 0, right: 0, height: 2,
                     background: 'rgba(240,238,233,.08)',
                     zIndex: 3,
@@ -441,9 +467,9 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp })
                         background: `oklch(75% 0.18 ${era.hue})`,
                         boxShadow: `0 0 12px oklch(75% 0.18 ${era.hue})`,
                     }} />
-                </div>
+                </div>}
 
-                <div style={{
+                {!chromeHidden && <div style={{
                     position: 'absolute', right: 32, bottom: 88, zIndex: 4,
                     display: 'flex', alignItems: 'center', gap: 6,
                     padding: '6px 8px',
@@ -492,9 +518,9 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp })
                     <BIconBtn title={labels.fullscreen} onClick={toggleFullscreen}>
                         <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 4V2H4M10 4V2H8M2 8V10H4M10 8V10H8" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round"/></svg>
                     </BIconBtn>
-                </div>
+                </div>}
 
-                {minimal && (
+                {minimal && !chromeHidden && (
                     <div style={{
                         position: 'absolute', top: 20, left: '50%',
                         transform: 'translateX(-50%)',

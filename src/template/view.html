@@ -121,6 +121,12 @@
 
         function stripTags(s) { return String(s || '').replace(/<[^>]*>/g, '').trim(); }
 
+        var BASE_TITLE = document.title;
+        function applyDocumentTitle(headline) {
+            var h = stripTags(headline);
+            if (h) document.title = h + ' · @thecause/timelinejs';
+        }
+
         // Pick bundle based on ?theme=. React skin if any theme given.
         function loadTimelineBundle(useReact) {
             return new Promise(function (resolve, reject) {
@@ -170,6 +176,22 @@
             var options = optionsFromUrlParams();
             setPageLanguage(options.lang || options.language);
 
+            // Coerce common video-recording options from URL strings to real values
+            // so the cinematic skin reads them correctly.
+            if (options.autoplay === 'true' || options.autoplay === '1') options.autoplay = true;
+            if (options.loop === 'false' || options.loop === '0') options.loop = false;
+            if (options.cinematicDuration) {
+                var d = parseInt(options.cinematicDuration, 10);
+                if (Number.isFinite(d) && d > 0) options.cinematicDuration = d;
+            }
+
+            // chrome=hidden: hide every viewer affordance, including the home-link
+            // overlay so recordings show only the skin content.
+            if (options.chrome === 'hidden') {
+                var home = document.querySelector('.home-link');
+                if (home) home.style.display = 'none';
+            }
+
             if (!options.source) {
                 fatal('Aucune source fournie.', buildMissingSourceHint());
                 return;
@@ -188,9 +210,21 @@
 
                     try {
                         if (options.theme && TL.TimelineReact) {
+                            var userOnReady = typeof options.onReady === 'function' ? options.onReady : null;
+                            options.onReady = function (data) {
+                                applyDocumentTitle(data && data.title && data.title.headline);
+                                if (userOnReady) userOnReady(data);
+                            };
                             window.timeline = new TL.TimelineReact('timeline-view', options.source, options);
                         } else {
                             window.timeline = new TL.Timeline('timeline-view', options.source, options);
+                            if (window.timeline && typeof window.timeline.on === 'function') {
+                                window.timeline.on('ready', function () {
+                                    var cfg = window.timeline.config;
+                                    var headline = cfg && cfg.title && cfg.title.text && cfg.title.text.headline;
+                                    applyDocumentTitle(headline);
+                                });
+                            }
                         }
                     } catch (e) {
                         fatal('Erreur d’instanciation : ' + (e && e.message ? e.message : String(e)));

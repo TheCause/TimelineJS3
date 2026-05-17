@@ -42,6 +42,9 @@ function detectScriptPath() {
  *   - script_path: where to load locale JSON from (defaults to CDN)
  *   - standalone: forwarded to the skin (URL hash routing, theme persistence)
  *   - initialIdx, defaultTheme: forwarded to the skin
+ *   - onReady(adapted): invoked once after data is adapted and rendered.
+ *     `adapted` exposes `.title.headline`, `.eras`, `.events` — useful to
+ *     set document.title, log analytics, etc.
  */
 export class TimelineReact {
     constructor(elem, data, options = {}) {
@@ -55,6 +58,7 @@ export class TimelineReact {
         this._el = DOM.get(elem);
         this._options = options;
         this._root = null;
+        this._data = null;
         this._mount(data);
     }
 
@@ -76,6 +80,7 @@ export class TimelineReact {
         const labels = this._options.labels
             || pickLabels(this._options.language || this._options.lang)[this._skinKey];
 
+        this._data = adapted;
         this._root = createRoot(this._el);
         const Component = this._Component;
         this._root.render(
@@ -89,6 +94,10 @@ export class TimelineReact {
                 defaultTheme={this._options.defaultTheme}
             />
         );
+
+        if (typeof this._options.onReady === 'function') {
+            try { this._options.onReady(adapted); } catch (_e) { /* user callback */ }
+        }
     }
 
     /** Unmount React tree. Safe to call multiple times. */
