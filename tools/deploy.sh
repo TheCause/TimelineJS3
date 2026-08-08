@@ -32,7 +32,10 @@ npm run dist
 
 echo ""
 echo "→ Link audit (local)…"
-npx http-server dist -p "$SERVE_PORT" -c-1 > /dev/null 2>&1 &
+# Local server for the link audit: Python stdlib rather than `npx http-server`.
+# `npx` fetches a package outside the lockfile, with no integrity check — it was
+# the only step of this deploy doing so.
+python3 -m http.server --directory dist "$SERVE_PORT" > /dev/null 2>&1 &
 SERVE_PID=$!
 trap 'kill "$SERVE_PID" 2>/dev/null || true' EXIT
 # Give the server a moment to come up.
@@ -46,7 +49,7 @@ trap - EXIT
 
 echo ""
 echo "→ rsync dist/ → $REMOTE_HOST:$REMOTE_DIR"
-rsync -avz --delete --exclude='.well-known' --exclude='cgi-bin' \
+rsync -avz --delete --exclude='.well-known' --exclude='cgi-bin' --exclude='data' \
     dist/ "$REMOTE_HOST:$REMOTE_DIR"
 
 echo ""
