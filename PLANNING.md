@@ -1,7 +1,7 @@
 # TimelineJS3 — Planning
 
-> Fork autonome `@thecause/timelinejs` : 3 skins React + viewer + landing. Deploye o2switch `timeline.rqz-prospective.fr` (14 mai).
-> Voir aussi memoire `project_timelinejs_fork.md`. Repo data separe `timeline-data`.
+> Fork autonome `@thecause/timelinejs` : 3 skins React + viewer + landing.
+> Repo data séparé `timeline-data`.
 > Sans dates volontairement.
 
 ## EN COURS

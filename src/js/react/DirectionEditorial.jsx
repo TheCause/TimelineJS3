@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { SmartImage } from './SmartImage';
-import { useSlideLayers, computeYearRange, decadeTicks } from './hooks';
+import { useSlideLayers, useContainerWidth, computeYearRange, decadeTicks } from './hooks';
 import { LABELS_FR } from './labels';
 
 function eraColor(hue, l = 70, c = 0.08) {
     return `oklch(${l}% ${c} ${hue})`;
 }
 
-function EditorialMedia({ kind, caption, id, image, credit, wiki }) {
+function EditorialMedia({ kind, caption, id, image, credit, wiki, wikiLang }) {
     const tone = {
         satellite: ['#2a2722', '#5a5044'],
         portrait:  ['#3a2a1f', '#6b4e38'],
@@ -51,7 +51,7 @@ function EditorialMedia({ kind, caption, id, image, credit, wiki }) {
                 background: `radial-gradient(circle at 30% 30%, ${tone[1]} 0%, ${tone[0]} 80%)`,
                 boxShadow: 'inset 0 0 60px rgba(0,0,0,.4), 0 20px 60px rgba(0,0,0,.3)',
             }} />
-            <SmartImage src={image} wiki={wiki} alt={caption} />
+            <SmartImage src={image} wiki={wiki} wikiLang={wikiLang} alt={caption} />
             <div style={{
                 position: 'absolute', left: 0, right: 0, bottom: 0, height: '40%',
                 background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,.5) 100%)',
@@ -83,6 +83,26 @@ export function DirectionEditorial({ data, initialIdx = 0, labels: labelsProp })
     const ev = events[idx];
     const era = data.eras.find(e => e.id === ev.era) || { id: 'fallback', label: '—', hue: 0 };
     const layers = useSlideLayers(idx, 620);
+
+    const rootRef = useRef(null);
+    const width = useContainerWidth(rootRef);
+    const isMobile = width > 0 && width < 768;
+
+    useEffect(() => {
+        const onKey = (e) => {
+            const tgt = e.target;
+            if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable)) return;
+            if (e.code === 'ArrowRight' || e.code === 'KeyJ') {
+                e.preventDefault();
+                setIdx(i => Math.min(events.length - 1, i + 1));
+            } else if (e.code === 'ArrowLeft' || e.code === 'KeyK') {
+                e.preventDefault();
+                setIdx(i => Math.max(0, i - 1));
+            }
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [events.length]);
 
     const { min: yearMin, max: yearMax } = computeYearRange(events);
     const range = Math.max(1, yearMax - yearMin);
@@ -117,7 +137,7 @@ export function DirectionEditorial({ data, initialIdx = 0, labels: labelsProp })
                     to   { opacity: 1; transform: translateY(0); }
                 }
             `}</style>
-            <div style={{
+            <div ref={rootRef} style={{
                 position: 'absolute', inset: 0,
                 background: '#f5efe5',
                 color: '#1a1814',
@@ -127,7 +147,7 @@ export function DirectionEditorial({ data, initialIdx = 0, labels: labelsProp })
             }}>
                 <header className="tl-topbar" style={{
                     flex: '0 0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
-                    padding: '24px 40px 20px',
+                    padding: isMobile ? '16px 20px 14px' : '24px 40px 20px',
                     borderBottom: '1px solid rgba(26,24,20,.12)',
                 }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, minWidth: 0, flexWrap: 'wrap' }}>
@@ -169,14 +189,20 @@ export function DirectionEditorial({ data, initialIdx = 0, labels: labelsProp })
                         return (
                             <div key={layer.id} style={{
                                 position: 'absolute', inset: 0,
-                                display: 'grid', gridTemplateColumns: '1.15fr 1fr',
+                                display: 'grid',
+                                gridTemplateColumns: isMobile ? '1fr' : '1.15fr 1fr',
+                                gridTemplateRows: isMobile ? 'minmax(180px, 38%) 1fr' : '1fr',
                                 animation: anim === 'none' ? 'none' : `${anim} 620ms cubic-bezier(.2,.7,.3,1) both`,
                                 pointerEvents: isTop ? 'auto' : 'none',
                             }}>
-                                <div style={{ position: 'relative', borderRight: '1px solid rgba(26,24,20,.12)' }}>
-                                    <EditorialMedia kind={lev.mediaKind} caption={lev.mediaCaption} id={lev.id} image={lev.image} credit={lev.credit} wiki={lev.wiki} />
+                                <div style={{
+                                    position: 'relative',
+                                    borderRight: isMobile ? 'none' : '1px solid rgba(26,24,20,.12)',
+                                    borderBottom: isMobile ? '1px solid rgba(26,24,20,.12)' : 'none',
+                                }}>
+                                    <EditorialMedia kind={lev.mediaKind} caption={lev.mediaCaption} id={lev.id} image={lev.image} credit={lev.credit} wiki={lev.wiki} wikiLang={lev.wikiLang} />
                                     <div style={{
-                                        position: 'absolute', top: 24, left: 24,
+                                        position: 'absolute', top: isMobile ? 12 : 24, left: isMobile ? 12 : 24,
                                         display: 'flex', alignItems: 'center', gap: 8,
                                         padding: '6px 10px',
                                         background: 'rgba(245,239,229,.92)',
@@ -194,9 +220,10 @@ export function DirectionEditorial({ data, initialIdx = 0, labels: labelsProp })
                                 </div>
 
                                 <article style={{
-                                    padding: '40px 48px 32px',
+                                    padding: isMobile ? '20px 24px 20px' : '40px 48px 32px',
                                     display: 'flex', flexDirection: 'column',
                                     minHeight: 0, overflow: 'hidden',
+                                    overflowY: 'auto',
                                     background: '#f5efe5',
                                 }}>
                                     <div style={{
@@ -210,7 +237,9 @@ export function DirectionEditorial({ data, initialIdx = 0, labels: labelsProp })
                                     </div>
                                     <h1 style={{
                                         fontFamily: 'Newsreader, Georgia, serif',
-                                        fontWeight: 400, fontSize: 44, lineHeight: 1.08,
+                                        fontWeight: 400,
+                                        fontSize: isMobile ? 'clamp(26px, 5.5vw, 36px)' : 44,
+                                        lineHeight: 1.1,
                                         letterSpacing: '-.015em',
                                         margin: '0 0 16px', textWrap: 'pretty',
                                         animation: isTop && dir !== 0 ? 'a-text-in 750ms cubic-bezier(.2,.7,.3,1) both 140ms' : 'none',
@@ -266,6 +295,7 @@ export function DirectionEditorial({ data, initialIdx = 0, labels: labelsProp })
                                         <button
                                             onClick={() => setIdx(Math.max(0, idx - 1))}
                                             disabled={idx === 0}
+                                            aria-label={labels.prev}
                                             style={editorialBtnStyle(idx === 0)}
                                         >{labels.prev}</button>
                                         <span style={{
@@ -281,6 +311,7 @@ export function DirectionEditorial({ data, initialIdx = 0, labels: labelsProp })
                                         <button
                                             onClick={() => setIdx(Math.min(events.length - 1, idx + 1))}
                                             disabled={idx === events.length - 1}
+                                            aria-label={labels.next}
                                             style={editorialBtnStyle(idx === events.length - 1)}
                                         >{labels.next}</button>
                                     </div>
@@ -334,6 +365,8 @@ export function DirectionEditorial({ data, initialIdx = 0, labels: labelsProp })
                                     key={e.id}
                                     onClick={() => setIdx(i)}
                                     title={`${e.date.display} — ${e.headline}`}
+                                    aria-label={`${e.date.display} — ${e.headline}`}
+                                    aria-current={active ? 'step' : undefined}
                                     style={{
                                         position: 'absolute',
                                         left: `${yearToPct(e.date.y)}%`,

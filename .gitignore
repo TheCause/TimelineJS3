@@ -22,7 +22,7 @@ examples/dist
 .vscode
 .claude-handoff.md
 .playwright-mcp/
-landing-*.png
+*.png
 .claude
 
 # Playwright

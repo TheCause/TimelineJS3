@@ -41,7 +41,7 @@ new Timeline('timeline-embed', dataSource, options);
 ### Programmatic — React skins
 
 ```js
-import { TimelineReact } from '@thecause/timelinejs';
+import { TimelineReact } from '@thecause/timelinejs/react';
 // CSS not needed; skins are self-contained.
 
 new TimelineReact('timeline-embed', dataSource, {
@@ -89,7 +89,7 @@ src/js/
 
 ```bash
 npm install
-npm test           # 138 tests (10 suites), including loadConfig + adapter
+npm test           # 164 tests (14 suites), including loadConfig, adapter, skins & hooks
 npm run build      # both bundles + LESS themes
 npm start          # webpack dev server (vanilla)
 npm run dist       # clean + build

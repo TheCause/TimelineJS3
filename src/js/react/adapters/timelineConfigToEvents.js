@@ -90,11 +90,19 @@ function detectMediaKind(media) {
     }
 }
 
-function extractWikiTitle(url) {
+function extractWiki(url) {
     if (!url) return null;
-    const m = /wikipedia\.org\/wiki\/([^#?]+)/i.exec(url);
+    const m = /(?:([a-z0-9-]+)\.)?wikipedia\.org\/wiki\/([^#?]+)/i.exec(url);
     if (!m) return null;
-    try { return decodeURIComponent(m[1]); } catch (_e) { return m[1]; }
+    const lang = (m[1] && m[1].toLowerCase() !== 'www') ? m[1].toLowerCase() : 'en';
+    let title;
+    try { title = decodeURIComponent(m[2]); } catch (_e) { title = m[2]; }
+    return { title, lang };
+}
+
+function extractWikiTitle(url) {
+    const w = extractWiki(url);
+    return w ? w.title : null;
 }
 
 function tldateParts(tldate) {
@@ -153,14 +161,20 @@ export function adaptTimelineConfig(config, options = {}) {
         const parts = tldateParts(ev.start_date);
         const mediaUrl = ev.media && ev.media.url ? String(ev.media.url) : '';
         const sources = normalizeSources(ev.sources);
-        let wiki = extractWikiTitle(mediaUrl);
+        const wikiMatch = extractWiki(mediaUrl);
+        let wiki = wikiMatch ? wikiMatch.title : null;
+        let wikiLang = wikiMatch ? wikiMatch.lang : 'en';
         const image = wiki ? null : (mediaUrl || null);
         // Fallback illustration: an event with no media still gets a picture
         // by deriving a Wikipedia image from its first Wikipedia source.
         if (!wiki && !image) {
             for (let s = 0; s < sources.length; s++) {
-                const w = extractWikiTitle(sources[s].url);
-                if (w) { wiki = w; break; }
+                const w = extractWiki(sources[s].url);
+                if (w) {
+                    wiki = w.title;
+                    wikiLang = w.lang;
+                    break;
+                }
             }
         }
         const tags = ev.text && ev.text.tags;
@@ -186,6 +200,7 @@ export function adaptTimelineConfig(config, options = {}) {
             mediaCaption: (ev.media && ev.media.caption) || '',
             image,
             wiki,
+            wikiLang,
             credit: (ev.media && ev.media.credit) || '',
             sources,
         };

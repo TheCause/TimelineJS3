@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useContext, useCallback, createContext } from 'react';
 import { SmartImage } from './SmartImage';
+import { useContainerWidth, computeYearRange, decadeTicks } from './hooks';
 import { LABELS_FR } from './labels';
 
 // --- Themes --------------------------------------------------------------
@@ -43,38 +44,7 @@ const useT = () => useContext(ThemeC);
 const eraColor = (T, hue, lMod = 0) => `oklch(${T.eraL + lMod}% ${T.eraC} ${hue})`;
 const eraColorOn = (T, hue) => `oklch(${T.eraLOn}% ${T.eraC} ${hue})`;
 
-// --- Container-width hook -----------------------------------------------
-function useContainerWidth(ref) {
-    const [w, setW] = useState(1280);
-    useEffect(() => {
-        if (!ref.current) return;
-        const el = ref.current;
-        setW(el.getBoundingClientRect().width);
-        const ro = new ResizeObserver(entries => setW(entries[0].contentRect.width));
-        ro.observe(el);
-        return () => ro.disconnect();
-    }, [ref]);
-    return w;
-}
 
-// --- Year-range helpers (replace prototype's hardcoded 1957–2025) -------
-function computeYearRange(events) {
-    if (!events || events.length === 0) return { min: 1900, max: 2025 };
-    let min = events[0].date.y, max = events[0].date.y;
-    for (const e of events) {
-        if (e.date.y < min) min = e.date.y;
-        if (e.date.y > max) max = e.date.y;
-    }
-    const span = Math.max(1, max - min);
-    const pad = Math.max(1, Math.round(span * 0.04));
-    return { min: min - pad, max: max + pad };
-}
-function decadeTicks(min, max) {
-    const start = Math.ceil(min / 10) * 10;
-    const ticks = [];
-    for (let y = start; y <= max; y += 10) ticks.push(y);
-    return ticks;
-}
 
 // --- Leaf components ----------------------------------------------------
 function Bracket({ corner }) {
@@ -94,7 +64,7 @@ function Bracket({ corner }) {
     );
 }
 
-function ArchiveMedia({ kind, id, image, credit, wiki, labels }) {
+function ArchiveMedia({ kind, id, image, credit, wiki, wikiLang, labels }) {
     const T = useT();
     return (
         <div style={{
@@ -111,7 +81,7 @@ function ArchiveMedia({ kind, id, image, credit, wiki, labels }) {
                     `linear-gradient(90deg, ${T.archiveGrid} 1px, transparent 1px)`,
                 backgroundSize: '24px 24px',
             }} />
-            <SmartImage src={image} wiki={wiki} alt={credit} fit="cover"
+            <SmartImage src={image} wiki={wiki} wikiLang={wikiLang} alt={credit} fit="cover"
                 style={{ filter: T.kind === 'dark' ? 'saturate(.8) contrast(1)' : 'saturate(.85) contrast(1.02)' }} />
             {(image || wiki) && (
                 <div style={{
@@ -293,7 +263,9 @@ export function DirectionArchive({ data, standalone = false, initialIdx = 0, def
     const listRef = useRef(null);
     useEffect(() => {
         const el = listRef.current?.querySelector(`[data-event="${ev.id}"]`);
-        if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        if (typeof el?.scrollIntoView === 'function') {
+            el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
     }, [idx]);
 
     // Mobile tab
@@ -720,7 +692,7 @@ function CFiche({ ctx }) {
                 margin: isMobile ? '12px 16px' : '20px 24px 16px',
                 animation: 'c-soft-in 480ms cubic-bezier(.2,.7,.3,1) both',
             }}>
-                <ArchiveMedia kind={ev.mediaKind} id={ev.id} image={ev.image} credit={ev.credit} wiki={ev.wiki} labels={labels} />
+                <ArchiveMedia kind={ev.mediaKind} id={ev.id} image={ev.image} credit={ev.credit} wiki={ev.wiki} wikiLang={ev.wikiLang} labels={labels} />
             </div>
             <div key={`text-${idx}`} style={{
                 padding: isMobile ? '0 16px 24px' : '0 24px 24px',

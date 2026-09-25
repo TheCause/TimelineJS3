@@ -39,9 +39,6 @@ export function processImageInfoAPIJSON(j) {
             response['label'] = data.entityterms.label[0]
         }
     }
-    console.log(`processImageInfoAPIJSON`)
-    console.log(`JSON: `, j)
-    console.log(`response: `, response)
     return response
 }
 

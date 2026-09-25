@@ -4,7 +4,7 @@ import { useSlideLayers, computeYearRange, decadeTicks } from './hooks';
 import { LABELS_FR } from './labels';
 
 // --- Media placeholder, cinematic flavour --------------------------------
-function CinematicMedia({ kind, id, image, credit, wiki }) {
+function CinematicMedia({ kind, id, image, credit, wiki, wikiLang }) {
     const palette = {
         satellite: ['#0a0a0c', '#1c1f24', '#2b3038'],
         portrait:  ['#0a0908', '#1f1814', '#3a2a20'],
@@ -54,7 +54,7 @@ function CinematicMedia({ kind, id, image, credit, wiki }) {
                     'radial-gradient(1px 1px at 92% 48%, rgba(255,255,255,.3) 0, transparent 100%)',
                 opacity: kind === 'stars' || kind === 'pluto' || kind === 'orion' ? 1 : 0.45,
             }} />
-            <SmartImage src={image} wiki={wiki} alt={credit} />
+            <SmartImage src={image} wiki={wiki} wikiLang={wikiLang} alt={credit} />
             <div style={{
                 position: 'absolute', inset: 0,
                 backgroundImage:
@@ -232,7 +232,7 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp, o
                                     animation: 'b-kenburns 16s cubic-bezier(.2,.4,.3,1) both',
                                     transformOrigin: '40% 40%',
                                 }}>
-                                    <CinematicMedia kind={lev.mediaKind} id={lev.id} image={lev.image} credit={lev.credit} wiki={lev.wiki} />
+                                    <CinematicMedia kind={lev.mediaKind} id={lev.id} image={lev.image} credit={lev.credit} wiki={lev.wiki} wikiLang={lev.wikiLang} />
                                 </div>
                             </div>
                         );
@@ -289,6 +289,8 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp, o
                                 key={e.id}
                                 onClick={() => setIdx(i)}
                                 title={`${e.date.y} — ${e.headline}`}
+                                aria-label={`${e.date.y} — ${e.headline}`}
+                                aria-current={active ? 'step' : undefined}
                                 style={{
                                     flex: 1, width: '100%', border: 'none',
                                     background: active ? `oklch(70% 0.18 ${eraObj.hue})` : 'rgba(240,238,233,.18)',
@@ -310,7 +312,7 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp, o
                 }}>
                     <div style={{
                         fontFamily: '"Archivo", system-ui, sans-serif',
-                        fontWeight: 800, fontSize: 168, lineHeight: 0.85,
+                        fontWeight: 800, fontSize: 'clamp(72px, 14vw, 168px)', lineHeight: 0.85,
                         letterSpacing: '-.045em',
                         color: '#f0eee9',
                         fontFeatureSettings: '"tnum"',
@@ -342,7 +344,7 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp, o
                     </div>
                     <h1 style={{
                         fontFamily: '"Archivo", system-ui, sans-serif',
-                        fontWeight: 700, fontSize: 48, lineHeight: 1.02,
+                        fontWeight: 700, fontSize: 'clamp(24px, 5vw, 48px)', lineHeight: 1.05,
                         letterSpacing: '-.02em',
                         margin: '0 0 12px',
                         textWrap: 'balance',
@@ -427,6 +429,9 @@ export function DirectionCinematic({ data, initialIdx = 0, labels: labelsProp, o
                                 <button
                                     key={e.id}
                                     onClick={() => setIdx(i)}
+                                    title={`${e.date.y} — ${e.headline}`}
+                                    aria-label={`${e.date.y} — ${e.headline}`}
+                                    aria-current={active ? 'step' : undefined}
                                     style={{
                                         position: 'absolute',
                                         left: `${yearToPct(e.date.y)}%`,

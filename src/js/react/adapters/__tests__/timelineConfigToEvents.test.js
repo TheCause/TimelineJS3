@@ -92,6 +92,7 @@ describe('adaptTimelineConfig', () => {
         const config = new TimelineConfig(makeJSON());
         const out = adaptTimelineConfig(config);
         expect(out.events[0].wiki).toBe('Sputnik_1');
+        expect(out.events[0].wikiLang).toBe('en');
         expect(out.events[0].image).toBeNull();
         expect(out.events[0].mediaKind).toBe('archive');
     });
@@ -126,6 +127,7 @@ describe('adaptTimelineConfig', () => {
         const config = new TimelineConfig(json);
         const out = adaptTimelineConfig(config);
         expect(out.events[0].wiki).toBe('Spoutnik_1');
+        expect(out.events[0].wikiLang).toBe('fr');
         expect(out.events[0].image).toBeNull();
     });
 

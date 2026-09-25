@@ -692,7 +692,7 @@ footer {
 
 <main id="main" class="hero">
   <div class="hero-inner">
-    <div class="eyebrow">Timeline JSON viewer · v0.1.0</div>
+    <div class="eyebrow">Timeline JSON viewer · v0.2.0</div>
 
     <h1>
       Donnez une URL.
@@ -1028,7 +1028,7 @@ footer {
   </div>
   <div class="footer-bar">
     <span>© 2026 · @thecause/timelinejs</span>
-    <span>v0.1.0</span>
+    <span>v0.2.0</span>
   </div>
 </footer>
 
@@ -1136,7 +1136,7 @@ footer {
       const t = setTimeout(() => ctrl.abort(), 3000);
       const r = await fetch(url, { method: 'HEAD', mode: 'cors', signal: ctrl.signal }).catch(() => null);
       clearTimeout(t);
-      if (r && !r.ok) reachable = false;
+      if (r && !r.ok && r.status !== 405 && r.status !== 403) reachable = false;
     } catch (e) { /* CORS preflight failure — ignore, still try */ }
 
     if (!reachable) {

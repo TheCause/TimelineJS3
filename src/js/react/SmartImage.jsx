@@ -3,21 +3,26 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 /**
  * Image component with a graceful Wikipedia fallback.
  *   - `src`: a direct image URL. Tried first if provided.
- *   - `wiki`: an English Wikipedia page title. Resolved via the REST summary
- *     API to grab the page's canonical image — robust to URL drift.
+ *   - `wiki`: a Wikipedia page title (or { title, lang } object).
+ *     Resolved via the REST summary API to grab the page's canonical image — robust to URL drift.
+ *   - `wikiLang`: Wikipedia language code (e.g. 'en', 'fr', 'de'). Default: 'en'.
  * If both fail (or neither is given), the component renders nothing so its
  * placeholder neighbour stays visible.
  */
-export function SmartImage({ src, wiki, alt, style, fit = 'cover' }) {
+export function SmartImage({ src, wiki, wikiLang = 'en', alt, style, fit = 'cover' }) {
     const [url, setUrl] = useState(null);
     const [loaded, setLoaded] = useState(false);
     const [phase, setPhase] = useState('init'); // init | src | wiki | error
     const triedWiki = useRef(false);
 
-    const fetchWiki = useCallback((title) => {
+    const wikiTitle = typeof wiki === 'object' && wiki ? wiki.title : wiki;
+    const targetLang = (typeof wiki === 'object' && wiki && wiki.lang) || wikiLang || 'en';
+
+    const fetchWiki = useCallback((title, lang) => {
         if (!title) return;
         triedWiki.current = true;
-        fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`)
+        const apiHost = `${encodeURIComponent(lang || 'en')}.wikipedia.org`;
+        fetch(`https://${apiHost}/api/rest_v1/page/summary/${encodeURIComponent(title)}`)
             .then(r => (r.ok ? r.json() : null))
             .then(j => {
                 const u = j && (j.originalimage?.source || j.thumbnail?.source);
@@ -31,12 +36,12 @@ export function SmartImage({ src, wiki, alt, style, fit = 'cover' }) {
         setLoaded(false);
         triedWiki.current = false;
         if (src) { setUrl(src); setPhase('src'); }
-        else if (wiki) { fetchWiki(wiki); }
+        else if (wikiTitle) { fetchWiki(wikiTitle, targetLang); }
         else { setUrl(null); setPhase('error'); }
-    }, [src, wiki, fetchWiki]);
+    }, [src, wikiTitle, targetLang, fetchWiki]);
 
     const onError = () => {
-        if (phase === 'src' && wiki && !triedWiki.current) { fetchWiki(wiki); }
+        if (phase === 'src' && wikiTitle && !triedWiki.current) { fetchWiki(wikiTitle, targetLang); }
         else { setPhase('error'); }
     };
 

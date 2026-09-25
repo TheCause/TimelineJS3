@@ -11,7 +11,7 @@
 
 set -uo pipefail
 
-BASE="${1:-http://localhost:8765/dist}"
+BASE="${1:-http://localhost:8765}"
 TIMEOUT=8
 UA="Mozilla/5.0 (compatible; tljs-link-check/1.0)"
 

@@ -9,8 +9,16 @@ export function useContainerWidth(ref) {
     useEffect(() => {
         if (!ref.current) return;
         const el = ref.current;
-        setW(el.getBoundingClientRect().width);
-        const ro = new ResizeObserver(entries => setW(entries[0].contentRect.width));
+        if (typeof el.getBoundingClientRect === 'function') {
+            const rect = el.getBoundingClientRect();
+            if (rect && rect.width > 0) setW(rect.width);
+        }
+        if (typeof ResizeObserver === 'undefined') return;
+        const ro = new ResizeObserver(entries => {
+            if (entries[0] && entries[0].contentRect) {
+                setW(entries[0].contentRect.width);
+            }
+        });
         ro.observe(el);
         return () => ro.disconnect();
     }, [ref]);
